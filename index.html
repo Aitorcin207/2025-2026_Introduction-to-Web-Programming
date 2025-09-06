@@ -1,0 +1,36 @@
+<h1 id="text">Hello world</h1>
+<button id="my-button">click me</button>
+<script>
+  document.getElementById('my-button').addEventListener('click', function() {console.log('hello world');});
+  document.getElementById('my-button').addEventListener('click', 
+  function() {
+    if (document.getElementById('text').textContent === 'Moi maailma') {
+    document.getElementById('text').textContent = 'Hello world';
+    return;
+    }
+    else
+    document.getElementById('text').textContent = 'Moi maailma';
+  });
+</script>
+<p></p>
+<textarea id="item" rows="1" cols="20" placeholder="Write text"></textarea>
+<p></p>
+<body>
+    <button id="add-data">Add things to the list</button>
+        <script>
+            document.getElementById('add-data').addEventListener('click', function() {
+                const li = document.createElement('li');
+                if (document.getElementById('item').value === '') {
+                    alert('Write what you want to add to the list.');
+                }
+                else {
+                    li.textContent = document.getElementById('item').value;
+                    document.getElementById('my-list').appendChild(li);
+                    document.getElementById('item').value = '';
+                }
+            });
+        </script>
+    <ul id="my-list">
+
+    </ul>
+</body>
