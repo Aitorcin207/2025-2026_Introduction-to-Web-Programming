@@ -22,6 +22,9 @@
                 const li = document.createElement('li');
                 if (document.getElementById('item').value === '') {
                     alert('Write what you want to add to the list.');
+                    li.textContent = 'Empty item';
+                    document.getElementById('my-list').appendChild(li);
+                    document.getElementById('item').value = '';
                 }
                 else {
                     li.textContent = document.getElementById('item').value;
