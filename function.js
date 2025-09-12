@@ -40,14 +40,16 @@ function Add_to_table() {
 
             }
             if (imagen !== "") {
-                if (imagenInput.type === "file" && imagenInput.files.length > 0) {
-                    imagen_real = URL.createObjectURL(imagenInput.files[0]);
-            }
-                cell4.innerHTML = `<img src="${imagen_real}" alt="User Image" style="width:64px;height:64px;">`;
-            }
+                
+                    if (imagenInput.type === "file" && imagenInput.files.length > 0) {
+                        imagen_real = URL.createObjectURL(imagenInput.files[0]);
+
+                }
+                    table.rows[numero].cells[3].innerHTML = `<img src="${imagen_real}" alt="Image" style="width:64px;height:64px;">`;
+                }
             if (imagen == "") {
-                cell4.textContent = "-";
-            }
+                    table.rows[numero].cells[3].textContent = "-";
+                }
         }
         else {    
             let row = table.insertRow(-1);
@@ -68,7 +70,7 @@ function Add_to_table() {
                 if (imagenInput.type === "file" && imagenInput.files.length > 0) {
                     imagen_real = URL.createObjectURL(imagenInput.files[0]);
             }
-                cell4.innerHTML = `<img src="${imagen_real}" alt="User Image" style="width:64px;height:64px;">`;
+                cell4.innerHTML = `<img src="${imagen_real}" alt="Image" style="width:64px;height:64px;">`;
             }
             if (imagen == "") {
                 cell4.textContent = "-";
