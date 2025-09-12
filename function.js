@@ -16,7 +16,7 @@ function Add_to_table() {
     let user = document.getElementById("input-username").value;
     let email = document.getElementById("input-email").value;
     let admin = document.getElementById("input-admin").checked;
-    let imagenInput = document.getElementById("input-picture");
+    let imagenInput = document.getElementById("input-image");
     let imagen = imagenInput.value;
 
 
@@ -84,7 +84,7 @@ function Add_to_table() {
         document.getElementById("input-username").value = "";
         document.getElementById("input-email").value = "";
         document.getElementById("input-admin").checked = false;
-        document.getElementById("input-picture").value = "";
+        document.getElementById("input-image").value = "";
         return;
 
         }
@@ -100,5 +100,5 @@ function Add_to_table() {
     document.getElementById("input-username").value = "";
     document.getElementById("input-email").value = "";
     document.getElementById("input-admin").checked = false;
-    document.getElementById("input-picture").value = "";
+    document.getElementById("input-image").value = "";
 }
