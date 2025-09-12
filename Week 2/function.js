@@ -4,6 +4,14 @@ btn.addEventListener("click", Add_to_table);
 
 let table = document.getElementById("user-table");
 
+let empty = document.getElementById("empty-table");
+
+empty.addEventListener("click", Limpiar_tabla);
+
+function Limpiar_tabla() {
+    table.innerHTML = "<tr> <td>Username</td> <td>Email</td> <td>Admin</td> </tr>";
+    }
+
 function Add_to_table() {
     let user = document.getElementById("input-username").value;
     let email = document.getElementById("input-email").value;
