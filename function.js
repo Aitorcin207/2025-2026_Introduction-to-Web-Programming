@@ -16,6 +16,9 @@ function Add_to_table() {
     let user = document.getElementById("input-username").value;
     let email = document.getElementById("input-email").value;
     let admin = document.getElementById("input-admin").checked;
+    let imagenInput = document.getElementById("input-picture");
+    let imagen = imagenInput.value;
+
 
     if (user !== "" && email !== "") {
         let exists = false;
@@ -30,11 +33,20 @@ function Add_to_table() {
 
             if (admin == true) {
                 table.rows[numero].cells[2].textContent = "X"; // update admin status
-                alert("AAAAAAA");
+
             }
             else {
                 table.rows[numero].cells[2].textContent = "-"; // update admin status
-                alert("BBBBBBB");
+
+            }
+            if (imagen !== "") {
+                if (imagenInput.type === "file" && imagenInput.files.length > 0) {
+                    imagen_real = URL.createObjectURL(imagenInput.files[0]);
+            }
+                cell4.innerHTML = `<img src="${imagen_real}" alt="User Image" style="width:64px;height:64px;">`;
+            }
+            if (imagen == "") {
+                cell4.textContent = "-";
             }
         }
         else {    
@@ -42,6 +54,7 @@ function Add_to_table() {
             let cell1 = row.insertCell(0);
             let cell2 = row.insertCell(1);
             let cell3 = row.insertCell(2);
+            let cell4 = row.insertCell(3);
 
             cell1.textContent = user;
             cell2.textContent = email;
@@ -50,6 +63,15 @@ function Add_to_table() {
             }
             else {
                 cell3.textContent = "-";
+            }
+            if (imagen !== "") {
+                if (imagenInput.type === "file" && imagenInput.files.length > 0) {
+                    imagen_real = URL.createObjectURL(imagenInput.files[0]);
+            }
+                cell4.innerHTML = `<img src="${imagen_real}" alt="User Image" style="width:64px;height:64px;">`;
+            }
+            if (imagen == "") {
+                cell4.textContent = "-";
             }
         }
     }
@@ -60,6 +82,7 @@ function Add_to_table() {
         document.getElementById("input-username").value = "";
         document.getElementById("input-email").value = "";
         document.getElementById("input-admin").checked = false;
+        document.getElementById("input-picture").value = "";
         return;
 
         }
@@ -75,4 +98,5 @@ function Add_to_table() {
     document.getElementById("input-username").value = "";
     document.getElementById("input-email").value = "";
     document.getElementById("input-admin").checked = false;
+    document.getElementById("input-picture").value = "";
 }
