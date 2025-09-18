@@ -26,16 +26,21 @@ setupTable(populationData, employmentData);
 };
 
 function setupTable(populationData, employmentData) {
-    const tableBody = document.getElementById("table-rows");
+    const tableBody = document.getElementById("table_rows");
+    const municipalityNamesObj = populationData.dimension.Alue.category.label;
+    const municipalityCodesArray = Object.keys(municipalityNamesObj);
+    const municipalityNamesArray = Object.values(municipalityNamesObj);
+
     const populationValues = populationData.value;
     const employmentValues = employmentData.value;
-    console.log(populationValues);
-    console.log(employmentValues);
 
     tableBody.innerHTML = "";
 
-    for (let i = 0; i < populationValues.length; i++) {
+    for (let i = 0; i < municipalityCodesArray.length; i++) {
         const row = document.createElement("tr");
+
+        const municipalityCell = document.createElement("td");
+        municipalityCell.textContent = municipalityNamesArray[i];
 
         const populationCell = document.createElement("td");
         populationCell.textContent = populationValues[i];
@@ -43,6 +48,7 @@ function setupTable(populationData, employmentData) {
         const employmentCell = document.createElement("td");
         employmentCell.textContent = employmentValues[i];
 
+        row.appendChild(municipalityCell);
         row.appendChild(populationCell);
         row.appendChild(employmentCell);
 
