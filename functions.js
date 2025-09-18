@@ -52,6 +52,12 @@ function setupTable(populationData, employmentData) {
         const percentage = (employmentValues[i] / populationValues[i]) * 100;
         percentageCell.textContent = percentage.toFixed(2) + "%";
 
+        if (percentage >= 45) {
+            percentageCell.style.backgroundColor = "#abffbd";
+        } else if (percentage <= 25) {
+            percentageCell.style.backgroundColor = "#ffabab";
+        }
+
         row.appendChild(municipalityCell);
         row.appendChild(populationCell);
         row.appendChild(employmentCell);
