@@ -64,6 +64,7 @@ function setupTable(populationData, employmentData) {
             percentageCell.style.backgroundColor = "#ffabab";
         }
 
+        
         row.appendChild(municipalityCell);
         row.appendChild(populationCell);
         row.appendChild(employmentCell);
