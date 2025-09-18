@@ -42,3 +42,11 @@ tbody tr:nth-child(odd) {
     padding: 60px;
     width: 60%;
 }
+
+.highlight {
+    background-color: #abffbd;
+}
+
+.lowlight {
+    background-color: #ff9e9e;
+}
