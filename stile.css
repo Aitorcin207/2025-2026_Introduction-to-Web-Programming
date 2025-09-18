@@ -2,6 +2,12 @@
 tbody {
     font-family: Verdana, Arial, sans-serif;
 }
+
+h1 {
+    text-align: center;
+    font-family: Verdana, Arial, sans-serif;
+}
+
 td  {
     padding: 6px;
     border-bottom: 1px solid gray;
