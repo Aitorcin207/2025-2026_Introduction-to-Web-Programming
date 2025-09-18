@@ -53,8 +53,14 @@ function setupTable(populationData, employmentData) {
         percentageCell.textContent = percentage.toFixed(2) + "%";
 
         if (percentage >= 45) {
+            municipalityCell.style.backgroundColor = "#abffbd";
+            populationCell.style.backgroundColor = "#abffbd";
+            employmentCell.style.backgroundColor = "#abffbd";
             percentageCell.style.backgroundColor = "#abffbd";
         } else if (percentage <= 25) {
+            municipalityCell.style.backgroundColor = "#ffabab";
+            populationCell.style.backgroundColor = "#ffabab";
+            employmentCell.style.backgroundColor = "#ffabab";
             percentageCell.style.backgroundColor = "#ffabab";
         }
 
@@ -68,3 +74,5 @@ function setupTable(populationData, employmentData) {
 }
 
 initializeCode();
+
+
