@@ -43,10 +43,10 @@ tbody tr:nth-child(odd) {
     width: 60%;
 }
 
-.highlight {
-    background-color: #abffbd;
+.high_percentage {
+    background-color: #abffbd !important;
 }
 
-.lowlight {
-    background-color: #ff9e9e;
+.low_percentage {
+    background-color: #ff9e9e !important;
 }
