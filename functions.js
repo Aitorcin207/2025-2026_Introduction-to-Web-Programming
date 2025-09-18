@@ -48,9 +48,14 @@ function setupTable(populationData, employmentData) {
         const employmentCell = document.createElement("td");
         employmentCell.textContent = employmentValues[i];
 
+        const percentageCell = document.createElement("td");
+        const percentage = (employmentValues[i] / populationValues[i]) * 100;
+        percentageCell.textContent = percentage.toFixed(2) + "%";
+
         row.appendChild(municipalityCell);
         row.appendChild(populationCell);
         row.appendChild(employmentCell);
+        row.appendChild(percentageCell);
 
         tableBody.appendChild(row);
     }
