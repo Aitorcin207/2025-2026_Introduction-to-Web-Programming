@@ -41,7 +41,7 @@ body {
 
 .show-info p {
     padding: 10px;
-    text-align: center;
+    text-align: justify;
 }
 
 button {
@@ -103,5 +103,8 @@ button:hover {
     }
 }
 
-
-
+@media (max-width: 799px) {
+    .show-data {
+        display: block; /* Solo móvil/tablet */
+    }
+}
