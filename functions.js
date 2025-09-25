@@ -17,11 +17,11 @@ async function fetchShowData(query) {
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
-    return await response.json(); // devuelve un array de resultados
+    return await response.json();
 }
 
 function displayShowData(shows) {
-    showContainer.innerHTML = ''; // limpia el contenedor antes de mostrar los resultados
+    showContainer.innerHTML = '';
 
     if (shows.length === 0) {
         showContainer.innerHTML = '<p>No se encontraron series.</p>';
