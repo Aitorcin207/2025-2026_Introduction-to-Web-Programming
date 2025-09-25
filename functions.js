@@ -13,7 +13,7 @@ form.addEventListener('submit', async (event) => {
 });
 
 async function fetchShowData(query) {
-    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}`);
+    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`);
     if (!response.ok) {
         throw new Error('Network response was not ok');
     }
@@ -24,7 +24,7 @@ function displayShowData(shows) {
     showContainer.innerHTML = '';
 
     if (shows.length === 0) {
-        showContainer.innerHTML = '<p>No se encontraron series.</p>';
+        showContainer.innerHTML = '<p>Series not found.</p>';
         return;
     }
 
