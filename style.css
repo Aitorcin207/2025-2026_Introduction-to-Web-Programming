@@ -39,6 +39,11 @@ body {
     padding: 10px;
 }
 
+.show-info p {
+    padding: 10px;
+    text-align: center;
+}
+
 button {
     background-color: #607d8b;
     color: white;
@@ -65,7 +70,7 @@ button:hover {
 @media (max-width: 600px) {
     .show-data {
         flex-direction: column;
-        padding: 5px;
+
     }
     .show-data img {
         max-width: 100%;
@@ -77,14 +82,14 @@ button:hover {
         padding: 5px;
     }
     .show-info p {
-        padding: 5px;
+
         text-align: center;
     }
 }
 
 @media (min-width: 601px) and (max-width: 799px) {
     .show-data {
-        width: 95%;
+        width: 100%;
         margin-left: auto;
         margin-right: auto;
         flex-direction: row;
