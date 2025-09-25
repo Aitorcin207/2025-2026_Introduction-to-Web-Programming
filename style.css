@@ -103,12 +103,11 @@ button:hover {
 
 @media (min-width: 800px) {
     .show-data img {
-        
+        margin: auto;
         max-width: 300px;
         width: 100%;
         height: auto;
         display: block;
-        margin-right: 20px;
     }
     .show-data {
         width: 100%;
