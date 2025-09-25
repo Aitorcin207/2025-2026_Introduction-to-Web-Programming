@@ -1,73 +1,32 @@
-const populartionUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/vaerak/statfin_vaerak_pxt_11ra.px";
-const employmentUrl = "https://pxdata.stat.fi/PxWeb/api/v1/fi/StatFin/tyokay/statfin_tyokay_pxt_115b.px";
+const form = document.getElementById('form-show');
+const input = document.getElementById('input-show');
+const showContainer = document.querySelector('.show-container');
 
-const fetchStatsFinData = async (url, body) => {
-    const response = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(body)
-    });
-    return await response.json();
-};
-
-const initializeCode = async () => {
-
-    const populationbody = await (await fetch("/Week_3/population_query.json")).json();
-    const employmentbody = await (await fetch("/Week_3/employment_query.json")).json();
-
-    const [populationData, employmentData] = await Promise.all([
-        fetchStatsFinData(populartionUrl, populationbody),
-        fetchStatsFinData(employmentUrl, employmentbody)
-    ]);
-
-setupTable(populationData, employmentData);
-};
-
-function setupTable(populationData, employmentData) {
-    const tableBody = document.getElementById("table_rows");
-    const municipalityNamesObj = populationData.dimension.Alue.category.label;
-    const municipalityCodesArray = Object.keys(municipalityNamesObj);
-    const municipalityNamesArray = Object.values(municipalityNamesObj);
-
-    const populationValues = populationData.value;
-    const employmentValues = employmentData.value;
-
-    tableBody.innerHTML = "";
-
-    for (let i = 0; i < municipalityCodesArray.length; i++) {
-        const row = document.createElement("tr");
-
-        const municipalityCell = document.createElement("td");
-        municipalityCell.textContent = municipalityNamesArray[i];
-
-        const populationCell = document.createElement("td");
-        populationCell.textContent = populationValues[i];
-
-        const employmentCell = document.createElement("td");
-        employmentCell.textContent = employmentValues[i];
-
-        const percentageCell = document.createElement("td");
-        const percentage = (employmentValues[i] / populationValues[i]) * 100;
-        percentageCell.textContent = percentage.toFixed(2) + "%";
-        
-        if (percentage > 45) {
-            row.classList.add("high_percentage");
-        } else if (percentage < 25) {
-            row.classList.add("low_percentage");
-        }
-
-
-        row.appendChild(municipalityCell);
-        row.appendChild(populationCell);
-        row.appendChild(employmentCell);
-        row.appendChild(percentageCell);
-
-        tableBody.appendChild(row);
+form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (query) {
+        const showData = await fetchShowData(query);
+        displayShowData(showData);
     }
+    input.value = '';
+});
+
+async function fetchShowData(query) {
+    const response = await fetch(`https://api.tvmaze.com/singlesearch/shows?q=${encodeURIComponent(query)}`);
+    if (!response.ok) {
+        throw new Error('Network response was not ok');
+    }
+    return await response.json();
+}  
+function displayShowData(show) {
+    showContainer.innerHTML = `
+        <div class="show-data">
+            <img src="${show.image ? show.image.medium : 'https://via.placeholder.com/210x295?text=No+Image'}" alt="${show.name}">
+            <div class="show-info">
+                <h1>${show.name}</h1>
+                <p>${show.summary || 'No summary available.'}</p>
+            </div>
+        </div>
+    `;
 }
-
-initializeCode();
-
-
