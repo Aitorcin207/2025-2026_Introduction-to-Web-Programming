@@ -1,6 +1,6 @@
 body {
     background-color: #eceff1;
-
+    font-family: 'Roboto', sans-serif;
 }
 
 .show-container {
@@ -27,7 +27,7 @@ body {
 .show-data img {
     display: block;
     float: left;
-    margin-right: 20px;
+
     border-radius: 6px;
 }
 
