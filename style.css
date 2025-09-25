@@ -36,11 +36,11 @@ body {
     font-size: 18px;
     text-align: center;
     width: 100%;
-    padding: 0px;
+    padding: 10px;
 }
 
 .show-info p {
-    padding: 10px;
+    padding: 0px;
     text-align: justify;
 }
 
