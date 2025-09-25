@@ -40,7 +40,7 @@ body {
 }
 
 .show-info p {
-    padding: 0px;
+    padding: 10px;
     text-align: justify;
 }
 
@@ -79,7 +79,7 @@ button:hover {
     }
     .show-info {
         font-size: 16px;
-        padding: 10px;
+        padding: 0px;
 
     }
     .show-info p {
