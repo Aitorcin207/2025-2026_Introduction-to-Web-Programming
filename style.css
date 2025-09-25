@@ -36,11 +36,11 @@ body {
     font-size: 18px;
     text-align: center;
     width: 100%;
-    padding: 10px;
+    padding: 0px;
 }
 
 .show-info p {
-    padding: 10px;
+    padding: 0px;
     text-align: justify;
 }
 
@@ -79,11 +79,12 @@ button:hover {
     }
     .show-info {
         font-size: 16px;
+        padding: 10px;
 
     }
     .show-info p {
-
         text-align: center;
+        padding: 10px;
     }
 }
 
