@@ -34,7 +34,7 @@ body {
 .show-info {
     font-family: Verdana, Arial, sans-serif;
     font-size: 18px;
-    text-align: justify;
+    text-align: center;
     width: 100%;
     padding: 10px;
 }
@@ -81,7 +81,7 @@ button:hover {
     }
     .show-info p {
         padding: 5px;
-        text-align: justify;
+        text-align: center;
     }
 }
 
@@ -101,22 +101,5 @@ button:hover {
     }
 }
 
-@media (min-width: 800px) {
-    .show-data img {
-        margin: auto;
-        max-width: 300px;
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-    .show-data {
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .show-info p{
-        padding: 10px;
-        text-align: center;
-    }
-}
+
 
