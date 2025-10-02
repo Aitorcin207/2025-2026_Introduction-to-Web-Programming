@@ -1,46 +1,39 @@
-const form = document.getElementById('form-show');
-const input = document.getElementById('input-show');
-const showContainer = document.querySelector('.show-container');
+// Initialize map
+const map = L.map('map', {
+  minZoom: -3
+}).setView([64.5, 26.0], 5); // Center on Finland
 
-form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const query = input.value.trim();
-    if (query) {
-        const showsData = await fetchShowData(query);
-        displayShowData(showsData);
-    }
-    input.value = '';
-});
+// Add OpenStreetMap tile background
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
 
-async function fetchShowData(query) {
-    const response = await fetch(`https://api.tvmaze.com/search/shows?q=${query}`);
-    if (!response.ok) {
-        throw new Error('Network response was not ok');
-    }
-    return await response.json();
-}
+// GeoJSON URL (Statistics Finland WFS)
+const url = "https://geo.stat.fi/geoserver/wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=tilastointialueet:kunta4500k&outputFormat=json&srsName=EPSG:4326";
 
-function displayShowData(shows) {
-    showContainer.innerHTML = '';
+fetch(url)
+  .then(r => r.json())
+  .then(data => {
+    console.log("GeoJSON loaded:", data);
 
-    if (shows.length === 0) {
-        showContainer.innerHTML = '<p>Series not found.</p>';
-        return;
-    }
+    // Add GeoJSON with tooltips
+    const geojsonLayer = L.geoJSON(data, {
+      style: {
+        weight: 2,
+        color: "#333",
+        fillOpacity: 0.2
+      },
+      onEachFeature: (feature, layer) => {
+        if (feature.properties && feature.properties.name) {
+          layer.bindTooltip(feature.properties.name, {
+            sticky: true
+          });
+        }
+      }
+    }).addTo(map);
 
-    shows.forEach(result => {
-        const show = result.show;
-        const showElement = document.createElement('div');
-        showElement.classList.add('show-data');
-
-        showElement.innerHTML = `
-            <img src="${show.image ? show.image.medium : 'https://via.placeholder.com/210x295?text=No+Image'}" alt="${show.name}">
-            <div class="show-info">
-                <h1>${show.name}</h1>
-                <p>${show.summary || 'No summary available.'}</p>
-            </div>
-        `;
-
-        showContainer.appendChild(showElement);
-    });
-}
+    // Fit map to GeoJSON bounds
+    map.fitBounds(geojsonLayer.getBounds());
+  })
+  .catch(err => console.error("GeoJSON fetch error:", err));
