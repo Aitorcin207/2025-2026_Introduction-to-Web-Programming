@@ -7,7 +7,6 @@ const map = L.map('map', {
 
 // Add OpenStreetMap tile background
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
@@ -19,25 +18,19 @@ fetch(url)
   .then(data => {
     console.log("GeoJSON loaded:", data);
 
-    // Add GeoJSON with tooltips
     const geojsonLayer = L.geoJSON(data, {
-      style: {
-        weight: 2,
-      },
+      style: { weight: 2 },
       onEachFeature: (feature, layer) => {
         if (feature.properties && feature.properties.name) {
-          layer.bindTooltip(feature.properties.name, {
-            sticky: true
-          });
+          layer.bindTooltip(feature.properties.name, { sticky: true });
         }
       }
     }).addTo(map);
 
-
     map.fitBounds(geojsonLayer.getBounds());
 
+    // Pass geojsonLayer into initializeCode so later functions can use it (fixes scoping bug)
     initializeCode(geojsonLayer);
-
   })
   .catch(err => console.error("GeoJSON fetch error:", err));
 
@@ -52,12 +45,14 @@ async function fetchStatsFinData(url, body) {
 }
 
 const initializeCode = async (geojsonLayer) => {
+  // Adjust the path as needed - you had "/Week_5/migration_data_query.json"
   const migrationBody = await (await fetch("/Week_5/migration_data_query.json")).json();
-
   const migrationData = await fetchStatsFinData(migrationUrl, migrationBody);
 
+  // Build popups using the geojsonLayer instance
   setupMigrationPopups(migrationData, geojsonLayer);
 };
+
 
 function setupMigrationPopups(migrationData, geojsonLayer) {
   // Basic checks
@@ -156,8 +151,7 @@ function setupMigrationPopups(migrationData, geojsonLayer) {
 
   console.log("Built migrationMap with", Object.keys(migrationMap).length, "areas");
 
-
-
+  // Attach popups to each GeoJSON feature. Try multiple matching strategies for municipality code.
   geojsonLayer.eachLayer(layer => {
     if (!layer.feature || !layer.feature.properties) return;
 
