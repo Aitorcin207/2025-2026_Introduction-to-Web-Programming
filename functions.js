@@ -1,8 +1,7 @@
 // Initialize map
 const map = L.map('map', {
   minZoom: -3
-}).setView([64.5, 26.0], 5); // Center on Finland
-
+});
 // Add OpenStreetMap tile background
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
