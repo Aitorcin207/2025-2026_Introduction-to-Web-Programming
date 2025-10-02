@@ -5,7 +5,7 @@ const map = L.map('map', {
 
 // Add OpenStreetMap tile background
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
+
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
@@ -21,8 +21,6 @@ fetch(url)
     const geojsonLayer = L.geoJSON(data, {
       style: {
         weight: 2,
-        color: "#333",
-        fillOpacity: 0.2
       },
       onEachFeature: (feature, layer) => {
         if (feature.properties && feature.properties.name) {
