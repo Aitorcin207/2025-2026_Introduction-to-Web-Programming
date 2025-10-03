@@ -151,6 +151,42 @@ function setupMigrationPopups(migrationData, geojsonLayer) {
 
   console.log("Built migrationMap with", Object.keys(migrationMap).length, "areas");
 
+  // Reestilizar cada feature según su migración
+  geojsonLayer.setStyle(feature => {
+    let hue = 0; // default red si no hay datos válidos
+    const props = feature.properties;
+
+    // posible code match igual que antes
+    const geoCodeCandidates = [
+      props.kunta, props.Kunta, props.kunta_koodi, props.kunta_code, props.code, props.id
+    ].filter(Boolean).map(String);
+
+    let mig = null;
+    for (const c of geoCodeCandidates) {
+      if (migrationMap[c]) { mig = migrationMap[c]; break; }
+    }
+
+    if (!mig && (props.name || props.nimi || props.Nimi)) {
+      const geoName = (props.name || props.nimi || props.Nimi).toString().toLowerCase();
+      const foundKey = Object.keys(migrationMap).find(k =>
+        (migrationMap[k].name || "").toString().toLowerCase() === geoName
+      );
+      if (foundKey) mig = migrationMap[foundKey];
+    }
+
+    if (mig && mig.positive > 0 && mig.negative > 0) {
+      hue = Math.pow(mig.positive / mig.negative, 3) * 60;
+      if (hue > 120) hue = 120;
+    }
+
+    return {
+      weight: 1,
+      color: `hsl(${hue}, 75%, 50%)`,
+      fillOpacity: 0.7
+    };
+  });
+  
+
   // Attach popups to each GeoJSON feature. Try multiple matching strategies for municipality code.
   geojsonLayer.eachLayer(layer => {
     if (!layer.feature || !layer.feature.properties) return;
