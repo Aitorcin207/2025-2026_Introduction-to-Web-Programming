@@ -1,6 +1,3 @@
-// fetchPopulation.js
-// Fetches population data and displays it on a Frappe line chart
-
 window.addEventListener("load", () => {
   const url =
     "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
@@ -41,9 +38,7 @@ window.addEventListener("load", () => {
 
   fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(requestBody)
   })
     .then(response => {
@@ -53,12 +48,11 @@ window.addEventListener("load", () => {
     .then(data => {
       // Extract year labels and population values
       const years = Object.values(data.dimension.Vuosi.category.label);
-      const populations = data.value;
+      const populations = data.value.map(v => v * 1000); // convert thousands to actual population
 
-      // Cypress expects actual population numbers, not scaled decimals
-      console.log("Population data:", populations);
+      console.log("Population data (real numbers):", populations);
 
-      // Create Frappe Chart
+      // Create the chart
       new frappe.Chart("#chart", {
         title: "Population of Finland (2000-2021)",
         data: {
@@ -83,7 +77,5 @@ window.addEventListener("load", () => {
         }
       });
     })
-    .catch(error => {
-      console.error("Error fetching population data:", error);
-    });
+    .catch(error => console.error("Error fetching population data:", error));
 });

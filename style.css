@@ -3,10 +3,10 @@ body {
   text-align: center;
   padding: 30px;
   background: #fafafa;
-  }
+}
 
 #chart {
   margin: 0 auto;
   max-width: 800px;
   height: 450px; /* required height */
-  }
+}
