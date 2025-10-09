@@ -1,3 +1,5 @@
+// functions.js — renders population data without scaling
+
 window.addEventListener("load", async () => {
   try {
     const url =
@@ -35,7 +37,6 @@ window.addEventListener("load", async () => {
       response: { format: "json-stat2" }
     };
 
-    // Await the fetch request
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -46,18 +47,18 @@ window.addEventListener("load", async () => {
 
     const data = await response.json();
 
-    // Extract labels and multiply population values by 1000
+    // Extract years and population values (no scaling)
     const years = Object.values(data.dimension.Vuosi.category.label);
-    const populations = data.value;
+    const populations = data.value.map(v => Math.round(Number(v)));
 
     console.log("Population data (actual numbers):", populations);
 
-    // Wait a tick to ensure DOM is ready for Cypress timing
+    // Give Frappe some time to load
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Create the chart
+    // Render chart
     new frappe.Chart("#chart", {
-      title: "Population of Finland (2000-2021)",
+      title: "Population of Finland (2000–2021)",
       data: {
         labels: years,
         datasets: [
@@ -69,7 +70,7 @@ window.addEventListener("load", async () => {
         ]
       },
       type: "line",
-      height: 454,
+      height: 450,
       colors: ["#eb5146"],
       axisOptions: {
         xAxisMode: "tick",
