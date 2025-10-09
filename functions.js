@@ -64,9 +64,10 @@ window.addEventListener("load", async () => {
     });
 
     // Fix scaling: if small numbers, multiply by 1000
-    const maxRaw = Math.max(...rawNumbers.filter(v => !Number.isNaN(v)));
+    const numericVals = rawNumbers.filter(v => Number.isFinite(v));
+    const meanVal = numericVals.reduce((a, b) => a + b, 0) / numericVals.length;
     let populations;
-    if (maxRaw < 10000) {
+    if (meanVal < 1000) {
       populations = rawNumbers.map(v => Math.round(v * 1000));
     } else {
       populations = rawNumbers.map(v => Math.round(v));
