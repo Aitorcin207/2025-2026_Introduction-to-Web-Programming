@@ -2,23 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Leaflet Test</title>
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""/>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Population Data Fetch</title>
+  <style>
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 24px; background:#f7f7fb; color:#111 }
+    .container { max-width: 900px; margin: 0 auto; }
+    .reminder { background:#fffbe6; border-left:4px solid #ffcc00; padding:10px 14px; margin:10px 0; border-radius:6px; }
+    #status { margin: 8px 0; font-size: 0.95rem; color:#555 }
+    pre { background: #111; color: #e6eef8; padding: 12px; border-radius: 6px; overflow:auto; max-height:55vh; }
+    button { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer }
+  </style>
 </head>
 <body>
-  <div id="map"></div>
+  <div class="container">
+    <h1>Population data (2000-2021) — whole country (SSS)</h1>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""></script>
+    <div>
+      <button id="reloadBtn">Fetch population data</button>
+      <span id="status">Idle</span>
+    </div>
 
-  <!-- App JS -->
+    <h2>Raw JSON response</h2>
+    <pre id="output">No data yet.</pre>
+  </div>
+
   <script src="functions.js"></script>
 </body>
 </html>
