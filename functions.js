@@ -1,5 +1,3 @@
-// functions.js — renders population data without scaling
-
 window.addEventListener("load", async () => {
   try {
     const url =
@@ -47,10 +45,9 @@ window.addEventListener("load", async () => {
 
     const data = await response.json();
 
-    // Extract years and population values (no scaling)
+    // Extract years and population values
     const years = Object.values(data.dimension.Vuosi.category.label);
-    const populations = data.value.map(v => Math.round(Number(v)));
-
+    const populations = data.value.map(v => parseInt(v, 10));
     console.log("Population data (actual numbers):", populations);
 
     // Give Frappe some time to load
