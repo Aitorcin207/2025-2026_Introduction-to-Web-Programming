@@ -69,7 +69,7 @@ window.addEventListener("load", async () => {
         ]
       },
       type: "line",
-      height: 450,
+      height: 454,
       colors: ["#eb5146"],
       axisOptions: {
         xAxisMode: "tick",
