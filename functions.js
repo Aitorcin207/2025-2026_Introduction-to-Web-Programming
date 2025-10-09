@@ -53,14 +53,14 @@ window.addEventListener("load", () => {
     .then(data => {
       // Extract year labels and population values
       const years = Object.values(data.dimension.Vuosi.category.label);
-      const populations = data.value.map(v => Number(v));
+      const populations = data.value;
 
       // Cypress expects actual population numbers, not scaled decimals
       console.log("Population data:", populations);
 
       // Create Frappe Chart
       new frappe.Chart("#chart", {
-        title: "Population of Finland (2000–2021)",
+        title: "Population of Finland (2000-2021)",
         data: {
           labels: years,
           datasets: [
