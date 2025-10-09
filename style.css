@@ -5,8 +5,34 @@ body {
   background: #fafafa;
 }
 
+#form-container {
+  margin-bottom: 20px;
+}
+
+#input-area {
+  padding: 8px;
+  font-size: 16px;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#submit-data {
+  padding: 8px 15px;
+  font-size: 16px;
+  border: none;
+  background-color: #eb5146;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#submit-data:hover {
+  background-color: #d6443b;
+}
+
 #chart {
   margin: 0 auto;
   max-width: 800px;
-  height: 450px; /* required height */
+  height: 450px;
 }

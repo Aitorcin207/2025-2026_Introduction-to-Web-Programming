@@ -1,40 +1,38 @@
-// functions.js — robust async fetch + mapping + scaling for StatFin json-stat2
+// functions.js
 window.addEventListener("load", async () => {
-  const base = "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
+  const baseUrl = "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
 
-  // years we want (keeps control of x-axis)
   const wantedYears = [
     "2000","2001","2002","2003","2004","2005",
     "2006","2007","2008","2009","2010","2011",
     "2012","2013","2014","2015","2016","2017",
     "2018","2019","2020","2021"
   ];
-  
 
-  try {
-    // 1) fetch metadata so we can pick the correct Area code (WHOLE COUNTRY)
-    const metaResp = await fetch(`${base}/metadata`);
-    if (!metaResp.ok) throw new Error("Failed to load metadata: " + metaResp.status);
-    const meta = await metaResp.json();
+  let areaCodes = {};
+  let chart = null;
 
-    // find the code for the 'WHOLE COUNTRY' label in the Area dimension (robust, case-insensitive)
-    const areaLabels = meta.dimension?.Alue?.category?.label || {};
-    let wholeCode = Object.keys(areaLabels).find(
-      k => String(areaLabels[k]).toLowerCase().includes("whole country")
-           || String(areaLabels[k]).toLowerCase().includes("whole")
-           || String(areaLabels[k]).toLowerCase().includes("whole country".toLowerCase())
-    );
+  // 🗺️ Load all municipality names and codes
+  async function loadAreaCodes() {
+    const response = await fetch(baseUrl);
+    if (!response.ok) throw new Error("Failed to fetch area list");
+    const data = await response.json();
 
-    // fallback: try some likely candidates or use the first entry if nothing found
-    if (!wholeCode) {
-      // common fallback used by some StatFin tables — keep a safe fallback but prefer auto-find above
-      wholeCode = "SSS";
-      console.warn("Could not auto-detect WHOLE COUNTRY code — falling back to 'SSS'.");
-    } else {
-      console.log("Detected WHOLE COUNTRY code:", wholeCode, "label:", areaLabels[wholeCode]);
-    }
+    const areas = data.variables.find(v => v.code === "Alue");
+    if (!areas) throw new Error("No area data found");
 
-    // 2) Build POST body (request only the wanted years + whole country + population)
+    // Build map: lowercase name → code
+    areaCodes = {};
+    areas.values.forEach((code, i) => {
+      const name = areas.valueTexts[i].toLowerCase();
+      areaCodes[name] = code;
+    });
+
+    console.log("Loaded area codes:", areaCodes);
+  }
+
+  // 📈 Fetch and render population data for a specific area code
+  async function fetchPopulation(areaCode, areaName) {
     const requestBody = {
       query: [
         {
@@ -43,105 +41,85 @@ window.addEventListener("load", async () => {
         },
         {
           code: "Alue",
-          selection: { filter: "item", values: [wholeCode] }
+          selection: { filter: "item", values: [areaCode] }
         },
         {
           code: "Tiedot",
-          selection: { filter: "item", values: ["vaesto"] } // population info
+          selection: { filter: "item", values: ["vaesto"] }
         }
       ],
       response: { format: "json-stat2" }
     };
 
-    // 3) fetch the actual data
-    const resp = await fetch(base, {
+    const response = await fetch(baseUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestBody)
     });
-    if (!resp.ok) throw new Error("Data fetch failed: " + resp.status);
-    const data = await resp.json();
 
-    // 4) Map values -> years using JSON-stat2 ordering (category.index)
-    const yearCategory = data.dimension?.Vuosi?.category;
-    if (!yearCategory) throw new Error("Unexpected response shape: missing Vuosi.category");
+    if (!response.ok) throw new Error("Failed to fetch population data");
 
-    // category.index maps year string -> position in data.value
-    const yearIndex = yearCategory.index;
-    // build years array in the same order as the data.value positions for selected years:
-    // (we use wantedYears to guarantee x-axis order is 2000..2021)
-    const labels = wantedYears.map(y => yearCategory.label[y] ?? y);
+    const data = await response.json();
+    const years = Object.values(data.dimension.Vuosi.category.label);
+    const rawValues = data.value.map(Number);
 
-    // data.value should be an array with one value per year (since other dims are single-selection)
-    // Map each wanted year to its place in the data.value array using yearIndex.
-    const rawValues = wantedYears.map(y => {
-      const idx = yearIndex[y];
-      // defensively handle missing index
-      return (typeof idx === "number" && Array.isArray(data.value)) ? Number(data.value[idx]) : NaN;
-    });
+    // Detect scaling (API returns thousands)
+    const maxRaw = Math.max(...rawValues);
+    const populations = maxRaw < 10000 ? rawValues.map(v => v * 1000) : rawValues;
 
-    console.log("Raw values from API (may be scaled):", rawValues);
+    console.log(`Population data for ${areaName}:`, populations);
 
-    // 5) Auto-scale small numbers (common case: API returns thousands or decimals)
-    // Heuristic: if max raw value is smaller than 10_000 it's probably given in thousands -> multiply by 1000.
-    let values = rawValues.slice();
-    const maxRaw = Math.max(...values.filter(v => !Number.isNaN(v)));
-    let scaleApplied = 1;
-    if (!Number.isFinite(maxRaw)) {
-      throw new Error("No numeric data returned from the API for the requested selection.");
-    }
-    if (maxRaw < 10000) {
-      values = values.map(v => Number.isNaN(v) ? v : Math.round(v * 1000)); // convert thousands -> individuals
-      scaleApplied = 1000;
-      console.warn("Small raw values detected; scaling by x1000 to convert to actual population counts.");
-    } else {
-      // already large enough — just round to integers
-      values = values.map(v => Number.isNaN(v) ? v : Math.round(v));
-    }
-
-    console.log("Final population values (after optional scaling x" + scaleApplied + "):", values);
-
-    // 6) ensure DOM is ready (tiny pause helps flakiness in tests)
-    await new Promise(r => setTimeout(r, 50));
-
-    // 7) Create the Frappe chart exactly as required
-    new frappe.Chart("#chart", {
-      title: "Population of Finland (2000-2021)",
-      data: {
-        labels,
-        datasets: [
-          {
-            name: "Population",
-            type: "line",
-            values
-          }
-        ]
-      },
-      type: "line",
-      height: 450,
-      colors: ["#eb5146"],
-      axisOptions: {
-        xAxisMode: "tick",
-        yAxisMode: "tick"
-      },
-      // present tooltips as formatted integers with thousands separators
-      tooltipOptions: {
-        formatTooltipY: d => {
-          // d may be number or formatted string; ensure numeric formatting
-          const n = Number(d);
-          if (Number.isFinite(n)) return new Intl.NumberFormat("en-US").format(Math.round(n));
-          return d;
+    // Render or update chart
+    const chartData = {
+      labels: years,
+      datasets: [
+        {
+          name: "Population",
+          type: "line",
+          values: populations
         }
-      },
-      lineOptions: {
-        regionFill: 1
-      }
-    });
+      ]
+    };
 
-  } catch (err) {
-    console.error("Error in population chart workflow:", err);
-    // show a minimal user-visible message so test/devs can notice error quickly
-    const c = document.getElementById("chart");
-    if (c) c.innerHTML = "<p style='color:crimson'>Failed to load population data — check console.</p>";
+    if (chart) {
+      chart.update(chartData);
+      chart.title = `Population of ${areaName} (2000–2021)`;
+    } else {
+      chart = new frappe.Chart("#chart", {
+        title: `Population of ${areaName} (2000–2021)`,
+        data: chartData,
+        type: "line",
+        height: 450,
+        colors: ["#eb5146"],
+        axisOptions: { xAxisMode: "tick", yAxisMode: "tick" },
+        lineOptions: { regionFill: 1 }
+      });
+    }
   }
+
+  // 🚀 Initialize app
+  try {
+    await loadAreaCodes();
+    // Show whole country by default
+    const defaultCode = Object.values(areaCodes)[0];
+    const defaultName = Object.keys(areaCodes).find(k => areaCodes[k] === defaultCode) || "Whole country";
+    await fetchPopulation(defaultCode, defaultName);
+  } catch (error) {
+    console.error("Error initializing app:", error);
+  }
+
+  // 🎯 Handle user search
+  document.getElementById("submit-data").addEventListener("click", async () => {
+    const input = document.getElementById("input-area").value.trim().toLowerCase();
+
+    if (!input) return alert("Please enter a municipality name!");
+
+    const areaCode = areaCodes[input];
+    if (!areaCode) {
+      alert(`No data found for "${input}". Try another name.`);
+      return;
+    }
+
+    await fetchPopulation(areaCode, input.charAt(0).toUpperCase() + input.slice(1));
+  });
 });

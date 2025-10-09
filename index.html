@@ -7,11 +7,17 @@
 
   <link rel="stylesheet" href="style.css">
 
-  <!-- Import Frappe Charts from unpkg (@latest) -->
+  <!-- Import Frappe Charts -->
   <script src="https://unpkg.com/frappe-charts@latest/dist/frappe-charts.min.umd.js"></script>
 </head>
 <body>
   <h1>Population of Finland (2000-2021)</h1>
+
+  <!-- Form for selecting municipality -->
+  <div id="form-container">
+    <input type="text" id="input-area" placeholder="Enter municipality (e.g. Helsinki)" />
+    <button id="submit-data">Show data</button>
+  </div>
 
   <!-- Chart container -->
   <div id="chart"></div>
