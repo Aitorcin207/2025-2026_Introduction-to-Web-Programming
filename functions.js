@@ -51,29 +51,36 @@ window.addEventListener("load", () => {
       return response.json();
     })
     .then(data => {
-      console.log("Population data fetched:", data);
+      // Extract year labels and population values
+      const years = Object.values(data.dimension.Vuosi.category.label);
+      const populations = data.value.map(v => Number(v));
 
-      // Extract population values from response
-      const years = data.dimension.Vuosi.category.label;
-      const yearLabels = Object.values(years);
-      const populationValues = data.value;
+      // Cypress expects actual population numbers, not scaled decimals
+      console.log("Population data:", populations);
 
       // Create Frappe Chart
-      const chart = new frappe.Chart("#chart", {
+      new frappe.Chart("#chart", {
         title: "Population of Finland (2000–2021)",
         data: {
-          labels: yearLabels,
+          labels: years,
           datasets: [
             {
               name: "Population",
               type: "line",
-              values: populationValues
+              values: populations
             }
           ]
         },
-        type: "line", // line chart
+        type: "line",
         height: 450,
-        colors: ["#eb5146"]
+        colors: ["#eb5146"],
+        axisOptions: {
+          xAxisMode: "tick",
+          yAxisMode: "tick"
+        },
+        lineOptions: {
+          regionFill: 1
+        }
       });
     })
     .catch(error => {
