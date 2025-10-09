@@ -1,30 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Population Data Fetch</title>
-  <style>
-    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial; padding: 24px; background:#f7f7fb; color:#111 }
-    .container { max-width: 900px; margin: 0 auto; }
-    .reminder { background:#fffbe6; border-left:4px solid #ffcc00; padding:10px 14px; margin:10px 0; border-radius:6px; }
-    #status { margin: 8px 0; font-size: 0.95rem; color:#555 }
-    pre { background: #111; color: #e6eef8; padding: 12px; border-radius: 6px; overflow:auto; max-height:55vh; }
-    button { padding:8px 12px; border-radius:6px; border:1px solid #ccc; background:white; cursor:pointer }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Population data (2000-2021) — whole country (SSS)</h1>
-
-    <div>
-      <button id="reloadBtn">Fetch population data</button>
-      <span id="status">Idle</span>
-    </div>
-
-    <h2>Raw JSON response</h2>
-    <pre id="output">No data yet.</pre>
-  </div>
 
   <script src="functions.js"></script>
 </body>
