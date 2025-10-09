@@ -58,7 +58,7 @@ window.addEventListener("load", async () => {
 
     // Render chart
     new frappe.Chart("#chart", {
-      title: "Population of Finland (2000–2021)",
+      title: "Population of Finland (2000-2021)",
       data: {
         labels: years,
         datasets: [
