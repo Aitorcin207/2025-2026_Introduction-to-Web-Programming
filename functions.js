@@ -1,4 +1,5 @@
-// functions.js — correct scaling (x1000), mapping, and search-by-municipality
+// functions.js — correct scaling (x1000), mapping, search-by-municipality & predictive data button
+
 window.addEventListener("load", async () => {
   const baseUrl = "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
 
@@ -13,7 +14,6 @@ window.addEventListener("load", async () => {
   let defaultAreaCode = "SSS"; // fallback
   let chart = null;
 
-  // load area codes & names (GET to baseUrl returns variables with values & valueTexts)
   async function loadAreaMap() {
     const r = await fetch(baseUrl);
     if (!r.ok) throw new Error("Failed to fetch area list: " + r.status);
@@ -28,17 +28,12 @@ window.addEventListener("load", async () => {
       areaMap[name] = code;
     });
 
-    // try to detect whole-country code from labels, else fall back to SSS or first value
-    const wholeKey = Object.keys(areaMap).find(k => k.includes("whole country") || k.includes("whole"));
+    // detect whole country code
+    const wholeKey = Object.keys(areaMap).find(k => k.includes("whole country"));
     if (wholeKey) defaultAreaCode = areaMap[wholeKey];
-    else if (areaMap["ss s"] && !defaultAreaCode) defaultAreaCode = areaMap["ss s"];
     else if (areaVar.values && areaVar.values.length) defaultAreaCode = areaVar.values[0];
-
-    console.log("Loaded area map (example):", Object.keys(areaMap).slice(0,8));
-    console.log("Default area code:", defaultAreaCode);
   }
 
-  // fetch population for a specific area code and render chart
   async function fetchAndRender(areaCode = defaultAreaCode, areaName = "Whole country") {
     const body = {
       query: [
@@ -57,45 +52,29 @@ window.addEventListener("load", async () => {
     if (!resp.ok) throw new Error("Failed to fetch population: " + resp.status);
     const data = await resp.json();
 
-    // Map values to the requested years using category.index (robust ordering)
     const yearCategory = data.dimension?.Vuosi?.category;
     if (!yearCategory) throw new Error("Unexpected response: missing Vuosi.category");
 
-    const yearIndex = yearCategory.index; // maps year -> index in data.value
-    // Compose labels array in the same order as wantedYears (2000..2021)
+    const yearIndex = yearCategory.index;
     const labels = wantedYears.map(y => yearCategory.label[y] ?? y);
 
-    // rawNumbers mapped to each wanted year using the category.index
     const rawNumbers = wantedYears.map(y => {
       const idx = yearIndex[y];
       return (typeof idx === "number" && Array.isArray(data.value)) ? Number(data.value[idx]) : NaN;
     });
 
-    console.log("Raw values from API (may be in thousands):", rawNumbers);
-
-    // CORRECT SCALING: If values are small (< 10000) they are in thousands -> multiply by 1000
-    // NOTE: Do NOT multiply by 10000 (that was the earlier mistake)
-    const numericRaw = rawNumbers.map(v => Number.isFinite(v) ? v : NaN);
-    const maxRaw = Math.max(...numericRaw.filter(v => !Number.isNaN(v)));
+    // Fix scaling: if small numbers, multiply by 1000
+    const maxRaw = Math.max(...rawNumbers.filter(v => !Number.isNaN(v)));
     let populations;
-    if (!Number.isFinite(maxRaw)) {
-      throw new Error("No numeric data returned from API for the selection.");
-    }
     if (maxRaw < 10000) {
-      // likely in thousands (e.g., 5548.241 -> 5,548,241)
-      populations = numericRaw.map(v => Number.isNaN(v) ? v : Math.round(v * 1000));
-      console.log("Detected values in thousands — scaling by x1000.");
+      populations = rawNumbers.map(v => Math.round(v * 1000));
     } else {
-      // already per-person counts, just round to integers
-      populations = numericRaw.map(v => Number.isNaN(v) ? v : Math.round(v));
-      console.log("Values appear to be already in persons (no scaling).");
+      populations = rawNumbers.map(v => Math.round(v));
     }
 
-    console.log("Final population values:", populations);
-
-    // Render chart: recreate container to reliably update title + values
+    // Render chart
     const container = document.getElementById("chart");
-    container.innerHTML = ""; // clear previous chart (if any)
+    container.innerHTML = ""; // clear old chart
 
     chart = new frappe.Chart("#chart", {
       title: `Population of ${areaName} (2000–2021)`,
@@ -109,30 +88,32 @@ window.addEventListener("load", async () => {
       axisOptions: { xAxisMode: "tick", yAxisMode: "tick" },
       lineOptions: { regionFill: 1 },
       tooltipOptions: {
+        // format with dots (European style)
         formatTooltipY: d => {
           const n = Number(d);
-          return Number.isFinite(n) ? new Intl.NumberFormat("en-US").format(n) : d;
+          return Number.isFinite(n)
+            ? n.toLocaleString("de-DE") // e.g., 5.548.241
+            : d;
         }
       }
     });
 
-    // expose chart for debugging in console: window.populationChart.data.datasets[0].values
     window.populationChart = chart;
   }
 
-  // init: load areas and initial chart
   try {
     await loadAreaMap();
     await fetchAndRender(defaultAreaCode, "Whole country");
   } catch (err) {
     console.error("Initialization error:", err);
-    const c = document.getElementById("chart");
-    if (c) c.innerHTML = "<p style='color:crimson'>Failed to load population data — check console.</p>";
+    document.getElementById("chart").innerHTML =
+      "<p style='color:crimson'>Failed to load data.</p>";
   }
 
-  // wire up the form: case-insensitive search and Enter key support
+  // --- Municipality search ---
   const inputEl = document.getElementById("input-area");
   const buttonEl = document.getElementById("submit-data");
+
   if (inputEl && buttonEl) {
     buttonEl.addEventListener("click", async () => {
       const raw = (inputEl.value || "").trim().toLowerCase();
@@ -140,7 +121,7 @@ window.addEventListener("load", async () => {
 
       const matchedCode = areaMap[raw];
       if (!matchedCode) {
-        alert(`No municipality found for "${inputEl.value}". Try another name (case-insensitive).`);
+        alert(`No municipality found for "${inputEl.value}".`);
         return;
       }
 
@@ -148,13 +129,47 @@ window.addEventListener("load", async () => {
         await fetchAndRender(matchedCode, inputEl.value.trim());
       } catch (err) {
         console.error("Error fetching municipality data:", err);
-        alert("Failed to fetch data for that municipality. Check console for details.");
+        alert("Failed to fetch data.");
       }
     });
 
-    // allow Enter to submit
     inputEl.addEventListener("keydown", e => {
       if (e.key === "Enter") buttonEl.click();
+    });
+  }
+
+  // --- Prediction Button ---
+  const addBtn = document.getElementById("add-data");
+  if (addBtn) {
+    addBtn.addEventListener("click", () => {
+      if (!chart) return;
+
+      const dataset = chart.data.datasets[0];
+      const vals = dataset.values.map(v => Number(v));
+      if (vals.length < 2) return alert("Not enough data points.");
+
+      // Calculate mean delta
+      const deltas = [];
+      for (let i = 1; i < vals.length; i++) {
+        deltas.push(vals[i] - vals[i - 1]);
+      }
+      const meanDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+
+      // Predict next value
+      const nextVal = Math.round(vals[vals.length - 1] + meanDelta);
+
+      // Add new label (next year)
+      const labels = chart.data.labels;
+      const lastYear = parseInt(labels[labels.length - 1]);
+      const nextYear = isNaN(lastYear) ? labels.length + 1 : lastYear + 1;
+
+      labels.push(nextYear.toString());
+      dataset.values.push(nextVal);
+
+      chart.update({
+        labels,
+        datasets: [dataset]
+      });
     });
   }
 });
