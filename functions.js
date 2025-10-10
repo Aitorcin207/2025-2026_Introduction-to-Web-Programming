@@ -2,6 +2,11 @@ window.addEventListener("load", async () => {
   const url =
     "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
 
+  let currentYears = [];
+  let currentValues = [];
+  let currentAreaName = "Finland";
+  let chart = null;
+
   try {
     // --- 1. Fetch area codes and names ---
     const areaResponse = await fetch(url);
@@ -32,7 +37,7 @@ window.addEventListener("load", async () => {
             code: "Alue",
             selection: {
               filter: "item",
-              values: [areaCode] // Use the municipality code
+              values: [areaCode]
             }
           },
           {
@@ -58,23 +63,31 @@ window.addEventListener("load", async () => {
       const years = Object.values(data.dimension.Vuosi.category.label);
       const populations = data.value;
 
-      // Render Frappe chart
-      new frappe.Chart("#chart", {
-        title: `Population of ${areaName} (2000–2021)`,
-        data: {
-          labels: years,
-          datasets: [
-            {
-              name: "Population",
-              type: "line",
-              values: populations
-            }
-          ]
-        },
-        type: "line",
-        height: 450,
-        colors: ["#eb5146"]
-      });
+      currentYears = years;
+      currentValues = populations;
+      currentAreaName = areaName;
+
+      // Render or update chart
+      if (chart) {
+        chart.update({
+          title: `Population of ${areaName} (2000–2021)`,
+          data: {
+            labels: years,
+            datasets: [{ name: "Population", type: "line", values: populations }]
+          }
+        });
+      } else {
+        chart = new frappe.Chart("#chart", {
+          title: `Population of ${areaName} (2000–2021)`,
+          data: {
+            labels: years,
+            datasets: [{ name: "Population", type: "line", values: populations }]
+          },
+          type: "line",
+          height: 450,
+          colors: ["#eb5146"]
+        });
+      }
     }
 
     // --- 3. Show default chart for whole country ---
@@ -83,8 +96,6 @@ window.addEventListener("load", async () => {
     // --- 4. Handle municipality search ---
     document.getElementById("submit-data").addEventListener("click", () => {
       const input = document.getElementById("input-area").value.trim().toLowerCase();
-
-      // Find the index of the matching municipality name
       const index = areaNames.findIndex(name => name.toLowerCase() === input);
 
       if (index === -1) {
@@ -94,10 +105,48 @@ window.addEventListener("load", async () => {
 
       const areaCode = areaCodes[index];
       const areaName = areaNames[index];
-
-      // Fetch and display new data
       fetchAndRender(areaCode, areaName);
     });
+
+    // --- 5. Handle prediction button ---
+    document.getElementById("add-data").addEventListener("click", () => {
+      if (currentValues.length < 2) {
+        alert("Not enough data points to predict.");
+        return;
+      }
+
+      // Compute mean delta
+      let deltas = [];
+      for (let i = 1; i < currentValues.length; i++) {
+        deltas.push(currentValues[i] - currentValues[i - 1]);
+      }
+      const meanDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+
+      // Compute next predicted value
+      const nextValue = currentValues[currentValues.length - 1] + meanDelta;
+
+      // Add new data point
+      const lastYear = parseInt(currentYears[currentYears.length - 1]);
+      const nextYear = (lastYear + 1).toString();
+      currentYears.push(nextYear);
+      currentValues.push(Math.round(nextValue));
+
+      // Update chart
+      chart.update({
+        title: `Population of ${currentAreaName} (Predicted to ${nextYear})`,
+        data: {
+          labels: currentYears,
+          datasets: [
+            {
+              name: "Population",
+              type: "line",
+              values: currentValues
+            }
+          ]
+        }
+      });
+    });
+
   } catch (error) {
     console.error("Error fetching or rendering population data:", error);
   }
