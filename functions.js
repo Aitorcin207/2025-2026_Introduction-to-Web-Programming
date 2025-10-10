@@ -45,13 +45,12 @@ window.addEventListener("load", async () => {
 
     const data = await response.json();
 
-    // Extract years and raw population values directly from API
+    // Extract years and population values (integers)
     const years = Object.values(data.dimension.Vuosi.category.label);
-    const populations = data.value; // use as-is, no parsing or mapping
+    const populations = data.value.map(v => Math.round(v)); // ensure integers
 
     console.log("Population data:", populations);
 
-    // Render Frappe chart without extra options or delay
     new frappe.Chart("#chart", {
       title: "Population of Finland (2000–2021)",
       data: {
@@ -66,7 +65,11 @@ window.addEventListener("load", async () => {
       },
       type: "line",
       height: 450,
-      colors: ["#eb5146"]
+      colors: ["#eb5146"],
+
+      // Disable automatic number formatting
+      format_tooltip_x: d => d,
+      format_tooltip_y: d => d
     });
   } catch (error) {
     console.error("Error fetching or rendering population data:", error);
