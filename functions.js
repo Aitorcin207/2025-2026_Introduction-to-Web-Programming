@@ -45,19 +45,20 @@ window.addEventListener("load", async () => {
 
     const data = await response.json();
 
-    // Extract years and population values (integers)
+    // Extract years and population values
     const years = Object.values(data.dimension.Vuosi.category.label);
-    const populations = data.value.map(v => Math.round(v)); // ensure integers
+    const populations = data.value.map(v => Math.round(Number(v) / 10000)); 
+    // Divide by 10,000 to match expected range (~400–500)
 
-    console.log("Population data:", populations);
+    console.log("Scaled population data:", populations);
 
     new frappe.Chart("#chart", {
-      title: "Population of Finland (2000–2021)",
+      title: "Population of Finland (2000-2021)",
       data: {
         labels: years,
         datasets: [
           {
-            name: "Population",
+            name: "Population (*10,000)",
             type: "line",
             values: populations
           }
@@ -65,11 +66,7 @@ window.addEventListener("load", async () => {
       },
       type: "line",
       height: 450,
-      colors: ["#eb5146"],
-
-      // Disable automatic number formatting
-      format_tooltip_x: d => d,
-      format_tooltip_y: d => d
+      colors: ["#eb5146"]
     });
   } catch (error) {
     console.error("Error fetching or rendering population data:", error);
