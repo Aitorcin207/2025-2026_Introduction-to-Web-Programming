@@ -45,20 +45,20 @@ window.addEventListener("load", async () => {
 
     const data = await response.json();
 
-    // Extract years and population values
+    // Extract years and raw population values directly from API
     const years = Object.values(data.dimension.Vuosi.category.label);
-    const populations = data.value.map(v => Math.round(Number(v) / 10000)); 
-    // Divide by 10,000 to match expected range (~400–500)
+    const populations = data.value; // use as-is, no parsing or mapping
 
-    console.log("Scaled population data:", populations);
+    console.log("Population data:", populations);
 
+    // Render Frappe chart without extra options or delay
     new frappe.Chart("#chart", {
-      title: "Population of Finland (2000-2021)",
+      title: "Population of Finland (2000–2021)",
       data: {
         labels: years,
         datasets: [
           {
-            name: "Population (*10,000)",
+            name: "Population",
             type: "line",
             values: populations
           }
