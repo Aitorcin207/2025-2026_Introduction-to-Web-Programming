@@ -2,23 +2,57 @@ window.addEventListener("load", async () => {
   const url =
     "https://statfin.stat.fi/PxWeb/api/v1/en/StatFin/synt/statfin_synt_pxt_12dy.px";
 
+  const inputEl = document.getElementById("input-area");
+  const submitBtn = document.getElementById("submit-data");
+  // Create add-data button if it's not present in the HTML
+  let addBtn = document.getElementById("add-data");
+  if (!addBtn) {
+    addBtn = document.createElement("button");
+    addBtn.id = "add-data";
+    addBtn.textContent = "Add prediction";
+    const form = document.getElementById("form-container") || document.body;
+    form.appendChild(addBtn);
+  }
+
+  const chartContainer = document.getElementById("chart");
+
+  // State
+  let areaCodes = [];
+  let areaNames = [];
   let currentYears = [];
   let currentValues = [];
   let currentAreaName = "Finland";
   let chart = null;
 
+  // disable prediction until first data load
+  addBtn.disabled = true;
+
   try {
-    // --- 1. Fetch area codes and names ---
-    const areaResponse = await fetch(url);
-    if (!areaResponse.ok) throw new Error("Failed to load area metadata");
+    // Fetch metadata to get area codes and names
+    const metaResp = await fetch(url);
+    if (!metaResp.ok) throw new Error("Failed to load area metadata");
+    const meta = await metaResp.json();
 
-    const areaData = await areaResponse.json();
-    const areaVariable = areaData.variables.find(v => v.code === "Alue");
-    const areaCodes = areaVariable.values;
-    const areaNames = areaVariable.valueTexts;
+    const areaVar = (meta.variables || []).find(v => v.code === "Alue");
+    if (!areaVar) throw new Error("Area (Alue) variable not found in metadata");
 
-    // --- 2. Function to fetch and render chart ---
-    async function fetchAndRender(areaCode, areaName) {
+    // Robustly extract codes and names (covers common pxweb shapes)
+    if (Array.isArray(areaVar.values)) {
+      areaCodes = areaVar.values.map(v => (typeof v === "object" ? (v.code ?? v.id ?? v) : String(v)));
+    } else {
+      areaCodes = [];
+    }
+    if (Array.isArray(areaVar.valueTexts)) {
+      areaNames = areaVar.valueTexts.map(n => String(n));
+    } else if (Array.isArray(areaVar.value_text) || Array.isArray(areaVar.valueText)) {
+      areaNames = (areaVar.valueTexts || areaVar.value_text || areaVar.valueText).map(n => String(n));
+    } else {
+      // fallback: if names not provided, use codes as names
+      areaNames = areaCodes.slice();
+    }
+
+    // helper: fetch population data for a given area code
+    async function fetchPopulation(areaCode) {
       const requestBody = {
         query: [
           {
@@ -51,89 +85,35 @@ window.addEventListener("load", async () => {
         response: { format: "json-stat2" }
       };
 
-      const response = await fetch(url, {
+      const resp = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody)
       });
+      if (!resp.ok) throw new Error("Data fetch failed");
 
-      if (!response.ok) throw new Error("Data fetch failed");
+      const data = await resp.json();
 
-      const data = await response.json();
-      const years = Object.values(data.dimension.Vuosi.category.label);
-      const populations = data.value;
+      // Years and values
+      const years = Object.values(data.dimension.Vuosi.category.label).map(y => String(y));
+      // Ensure values are plain numbers
+      const values = Array.isArray(data.value)
+        ? data.value.map(v => Number(v))
+        : [Number(data.value)];
 
-      currentYears = years;
-      currentValues = populations;
-      currentAreaName = areaName;
-
-      // Render or update chart
-      if (chart) {
-        chart.update({
-          title: `Population of ${areaName} (2000–2021)`,
-          data: {
-            labels: years,
-            datasets: [{ name: "Population", type: "line", values: populations }]
-          }
-        });
-      } else {
-        chart = new frappe.Chart("#chart", {
-          title: `Population of ${areaName} (2000–2021)`,
-          data: {
-            labels: years,
-            datasets: [{ name: "Population", type: "line", values: populations }]
-          },
-          type: "line",
-          height: 450,
-          colors: ["#eb5146"]
-        });
-      }
+      return { years, values };
     }
 
-    // --- 3. Show default chart for whole country ---
-    fetchAndRender("SSS", "Finland");
+    // draw chart (re-create to avoid update API mismatches)
+    function drawChart(areaName, predictedToYear = null) {
+      // clear container
+      chartContainer.innerHTML = "";
+      const title = predictedToYear
+        ? `Population of ${areaName} (Predicted to ${predictedToYear})`
+        : `Population of ${areaName} (${currentYears[0]}–${currentYears[currentYears.length - 1]})`;
 
-    // --- 4. Handle municipality search ---
-    document.getElementById("submit-data").addEventListener("click", () => {
-      const input = document.getElementById("input-area").value.trim().toLowerCase();
-      const index = areaNames.findIndex(name => name.toLowerCase() === input);
-
-      if (index === -1) {
-        alert("Municipality not found. Please check the spelling.");
-        return;
-      }
-
-      const areaCode = areaCodes[index];
-      const areaName = areaNames[index];
-      fetchAndRender(areaCode, areaName);
-    });
-
-    // --- 5. Handle prediction button ---
-    document.getElementById("add-data").addEventListener("click", () => {
-      if (currentValues.length < 2) {
-        alert("Not enough data points to predict.");
-        return;
-      }
-
-      // Compute mean delta
-      let deltas = [];
-      for (let i = 1; i < currentValues.length; i++) {
-        deltas.push(currentValues[i] - currentValues[i - 1]);
-      }
-      const meanDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
-
-      // Compute next predicted value
-      const nextValue = currentValues[currentValues.length - 1] + meanDelta;
-
-      // Add new data point
-      const lastYear = parseInt(currentYears[currentYears.length - 1]);
-      const nextYear = (lastYear + 1).toString();
-      currentYears.push(nextYear);
-      currentValues.push(Math.round(nextValue));
-
-      // Update chart
-      chart.update({
-        title: `Population of ${currentAreaName} (Predicted to ${nextYear})`,
+      chart = new frappe.Chart("#chart", {
+        title,
         data: {
           labels: currentYears,
           datasets: [
@@ -143,11 +123,83 @@ window.addEventListener("load", async () => {
               values: currentValues
             }
           ]
-        }
+        },
+        type: "line",
+        height: 450,
+        colors: ["#eb5146"]
       });
+
+      // enable prediction button now that the chart exists
+      addBtn.disabled = false;
+    }
+
+    // Initial default chart (whole country)
+    const defaultData = await fetchPopulation("SSS");
+    currentYears = defaultData.years;
+    currentValues = defaultData.values;
+    currentAreaName = "Finland";
+    drawChart(currentAreaName);
+
+    // Search button handler (case-insensitive exact match)
+    submitBtn.addEventListener("click", async () => {
+      const input = (inputEl.value || "").trim().toLowerCase();
+      if (!input) {
+        alert("Please type a municipality name.");
+        return;
+      }
+
+      const idx = areaNames.findIndex(n => n.toLowerCase() === input);
+      if (idx === -1) {
+        alert("Municipality not found. Please check the spelling (case-insensitive).");
+        return;
+      }
+
+      const code = areaCodes[idx];
+      const name = areaNames[idx] || code;
+
+      try {
+        // temporarily disable prediction while loading new area
+        addBtn.disabled = true;
+        const d = await fetchPopulation(code);
+        currentYears = d.years;
+        currentValues = d.values;
+        currentAreaName = name;
+        drawChart(currentAreaName);
+      } catch (err) {
+        console.error(err);
+        alert("Failed to fetch municipality data.");
+      }
     });
 
+    // Prediction button handler: add one predicted data point
+    addBtn.addEventListener("click", () => {
+      if (!currentValues || currentValues.length < 2) {
+        alert("Not enough data points to predict.");
+        return;
+      }
+
+      // Convert to numbers (safety) and compute deltas
+      const numeric = currentValues.map(v => Number(v));
+      const deltas = [];
+      for (let i = 1; i < numeric.length; i++) {
+        deltas.push(numeric[i] - numeric[i - 1]);
+      }
+      const meanDelta = deltas.reduce((a, b) => a + b, 0) / deltas.length;
+
+      const nextValueRaw = numeric[numeric.length - 1] + meanDelta;
+      const nextValue = Math.round(nextValueRaw);
+
+      // next year
+      const lastYear = parseInt(currentYears[currentYears.length - 1], 10);
+      const nextYear = (Number.isFinite(lastYear) ? lastYear + 1 : (currentYears.length + 1)).toString();
+
+      currentValues.push(nextValue);
+      currentYears.push(nextYear);
+
+      drawChart(currentAreaName, nextYear);
+    });
   } catch (error) {
-    console.error("Error fetching or rendering population data:", error);
+    console.error("Error initializing the page:", error);
+    alert("Initialization failed; see console for details.");
   }
 });
