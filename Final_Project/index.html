@@ -5,9 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Center Finland</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- Leaflet CSS -->
+
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
   <header>
     <h1>Data Center Finland</h1>
@@ -23,29 +29,30 @@
       <div class="selector">
         <label for="muni-select">Select municipality:</label>
         <select id="muni-select">
-          <option value="">Loading...</option>
+          <option>Loading...</option>
         </select>
       </div>
 
-      <div id="selected-info">No municipality selected</div>
+      <div id="selected-info"></div>
 
       <div class="charts">
-        <canvas id="chart-unemployment"></canvas>
-        <canvas id="chart-age-structure"></canvas>
-        <canvas id="chart-education"></canvas>
+        <canvas id="unemploymentChart"></canvas>
+        <canvas id="ageChart"></canvas>
+        <canvas id="educationChart"></canvas>
+        <canvas id="partyChart"></canvas>
       </div>
-
-      <div id="party-list"></div>
     </section>
   </main>
 
   <footer>
-    <p>Data source: Statistics Finland (StatFin)</p>
+    <p>Data source: 
+      <a href="https://statfin.stat.fi" target="_blank">Tilastokeskus (StatFin)</a>, 
+      <a href="https://ec.europa.eu/eurostat/web/main/data/database" target="_blank">Eurostat</a>, 
+      <a href="https://www.avoindata.fi/en" target="_blank">Open Data Finland</a>
+    </p>
   </footer>
 
   <script src="https://unpkg.com/topojson-client@3"></script>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="function.js"></script>
 </body>
 </html>
