@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>StatFin Visual Explorer</title>
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+4QwqF7qvZ6Y3Qp9k2k8q5fQv0vE3zY6b0/0n6wP0="
+    crossorigin=""
+  />
+
+  <!-- App stylesheet -->
+  <link rel="stylesheet" href="C:\Users\aitor\2025-2026_Introduction-to-Web-Programming\Final_Project\style.css" />
+</head>
+
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="card" id="sidebar">
+      <header>
+        <div>
+          <h1>StatFin Visual Explorer</h1>
+          <div class="small">Drag a data item onto the map area to switch the layer.</div>
+        </div>
+      </header>
+
+      <section class="data-section">
+        <h3>Data items (drag me)</h3>
+        <div id="data-list">
+          <div class="data-item" draggable="true" data-id="elections">Municipal elections (winning party)</div>
+          <div class="data-item" draggable="true" data-id="employment">Employment rate (%)</div>
+          <div class="data-item" draggable="true" data-id="unemployment">Unemployment rate (%)</div>
+          <div class="data-item" draggable="true" data-id="age">Median age</div>
+          <div class="data-item" draggable="true" data-id="education">Tertiary education %</div>
+        </div>
+      </section>
+
+      <section class="actions-section">
+        <h3>Actions</h3>
+        <div class="controls">
+          <button class="btn" id="btn-download">Download PNG</button>
+          <button class="btn secondary" id="btn-combine">Create combined index</button>
+        </div>
+        <div class="small">
+          Tip: If you hit CORS errors fetching StatFin PxWeb data, run a local proxy (instructions are in functions.js).
+        </div>
+      </section>
+
+      <section class="layer-section">
+        <h3>Layer selector</h3>
+        <div class="layer-controls">
+          <button class="btn secondary" id="layer-elections">Elections</button>
+          <button class="btn secondary" id="layer-employment">Employment</button>
+        </div>
+      </section>
+
+      <footer class="small">
+        This HTML file expects <code>functions.js</code> and <code>style.css</code> in the same folder.
+      </footer>
+    </aside>
+
+    <!-- Main content -->
+    <main>
+      <div class="card">
+        <div class="map-header">
+          <h2>Map — drop a data item here</h2>
+          <div class="small" id="current-layer">Layer: <strong id="layer-name">employment</strong></div>
+        </div>
+
+        <!-- Drop area + map -->
+        <div id="map" class="drop-target"></div>
+
+        <!-- Charts area -->
+        <div id="charts">
+          <div class="card chart-card">
+            <h4>Distribution</h4>
+            <canvas id="chart-distribution" width="400" height="220"></canvas>
+          </div>
+          <div class="card chart-card">
+            <h4>Trend / Timeseries (selected municipality)</h4>
+            <canvas id="chart-timeseries" width="400" height="220"></canvas>
+            <div class="small" id="selected-muni">No municipality selected</div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- External libraries -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-o8S0G0ZK0KpG3gq9+Mw6s7f8E6r7Vf2Zs5PCo1H8bvc="
+    crossorigin=""
+  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <!-- App logic -->
+  <script src="Final_Project\functions.js"></script>
+</body>
+</html>

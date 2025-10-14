@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Center Finland</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+  <header>
+    <h1>Data Center Finland</h1>
+  </header>
+
+  <main>
+    <section id="map-section">
+      <div id="map"></div>
+      <div id="legend"></div>
+    </section>
+
+    <section id="info-section">
+      <div class="selector">
+        <label for="muni-select">Select municipality:</label>
+        <select id="muni-select">
+          <option value="">Loading...</option>
+        </select>
+      </div>
+
+      <div id="selected-info">No municipality selected</div>
+
+      <div class="charts">
+        <canvas id="chart-unemployment"></canvas>
+        <canvas id="chart-age-structure"></canvas>
+        <canvas id="chart-education"></canvas>
+      </div>
+
+      <div id="party-list"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Data source: Statistics Finland (StatFin)</p>
+  </footer>
+
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="function.js"></script>
+</body>
+</html>
