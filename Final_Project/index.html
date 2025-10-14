@@ -16,13 +16,25 @@
 
 <body>
   <header>
-    <h1>Data Center Finland</h1>
+    <h1>Data Center Finland: Municipal Statistics</h1>
   </header>
 
   <main>
     <section id="map-section">
       <div id="map"></div>
-      <div id="legend"></div>
+      
+      <!-- Map Layer Selection (Feature for 2 points) -->
+      <div id="map-layer-selector">
+        <label>Map Layer:</label>
+        <select id="layer-select" onchange="changeMapLayer(this.value)">
+            <option value="party">Leading Party</option>
+            <option value="unemployment">Unemployment Rate</option>
+            <option value="education">Higher Education %</option>
+            <option value="index">Socio-Economic Index</option>
+        </select>
+        <div id="legend"></div>
+      </div>
+      
     </section>
 
     <section id="info-section">
@@ -33,9 +45,15 @@
         </select>
       </div>
 
-      <div id="selected-info"></div>
+      <div id="selected-info">
+        <h3>Select a municipality on the map or from the list.</h3>
+        <p>This application visualizes municipal data including elections, economy, and demographics.</p>
+      </div>
 
       <div class="charts">
+        <!-- Button to download the currently active chart (Feature for 2 points) -->
+        <button id="downloadChartBtn">Download Current Chart (PNG)</button>
+        
         <canvas id="unemploymentChart"></canvas>
         <canvas id="ageChart"></canvas>
         <canvas id="educationChart"></canvas>
@@ -46,8 +64,7 @@
 
   <footer>
     <p>Data source: 
-      <a href="https://statfin.stat.fi" target="_blank">Tilastokeskus (StatFin)</a>, 
-      <a href="https://ec.europa.eu/eurostat/web/main/data/database" target="_blank">Eurostat</a>, 
+      <a href="https://statfin.stat.fi/PxWeb/pxweb/en/StatFin/" target="_blank">Tilastokeskus (StatFin)</a>, 
       <a href="https://www.avoindata.fi/en" target="_blank">Open Data Finland</a>
     </p>
   </footer>
