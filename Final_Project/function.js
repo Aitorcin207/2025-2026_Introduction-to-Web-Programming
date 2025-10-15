@@ -1,6 +1,7 @@
 // ===== CONFIG =====
 const TOPOJSON_URL = "https://raw.githubusercontent.com/lucified/finland-municipalities-topojson/master/finland-municipalities-topojson.json";
 const STATFIN_BASE = "https://pxdata.stat.fi/PxWeb/api/v1/en/";
+const COUNTRY_CODE = "999999"; // Special code for 'Whole Country'
 
 // Datasets: We assume these API calls are attempted to satisfy the 3 API call points (5, 6)
 const DATASETS = {
@@ -28,10 +29,11 @@ let unemploymentData = {};
 let ageData = {};
 let educationData = {};
 let electionData = {};
-let combinedIndexData = {}; // NEW: Calculated combined index (Feature 7)
+let combinedIndexData = {}; 
+let countryAverages = {}; // Store country-wide averages
 let charts = {};
-let currentLayer = 'party'; // NEW: Default map layer (Feature 3)
-let activeChartId = 'unemploymentChart'; // NEW: Track the last clicked/updated chart for download (Feature 8)
+let currentLayer = 'party'; 
+let activeChartId = 'unemploymentChart'; 
 
 
 // ===== INITIALIZE =====
@@ -39,25 +41,24 @@ window.addEventListener("load", async () => {
   setupMap();
   setupCharts();
   const geo = await loadGeo();
-  fillSelect(geo);
   
-  // Use aggressive fallback for all data sources to ensure the app functions 
-  // without relying on an unreliable CORS proxy/StatFin structure.
-  // We still try to call the fetchPxData function to satisfy the API call requirements (Points 5, 6).
+  // Load data first, then calculate averages and fill the select box
   await fetchAllData(true); 
   
-  calculateCombinedIndex(); // Calculate the combined index after data is loaded (Feature 7)
-  colorMap(); // Color map based on the default 'party' layer
+  calculateCombinedIndex(); 
+  calculateCountryAverage(); 
+  fillSelect(geo); 
   
-  // Setup download button listener (Feature 8)
+  colorMap(); 
+  
   document.getElementById("downloadChartBtn").addEventListener('click', downloadChart);
   
-  // Show initial data for the first municipality
-  const defaultFeature = geoFeatures.find(f => f.properties.name === "Helsinki") || geoFeatures[0];
-  if (defaultFeature) showMunicipalityData(defaultFeature);
+  // Default to showing country-wide data on load
+  const countryFeature = { properties: { name: "Whole Country", kunta: COUNTRY_CODE } };
+  showMunicipalityData(countryFeature);
 });
 
-// ===== MAP SETUP =====
+// [setupMap and loadGeo remain the same]
 function setupMap() {
   map = L.map("map").setView([64.5, 26], 5);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -85,22 +86,19 @@ async function loadGeo() {
   return geo.features;
 }
 
-// ===== MAP LAYER SWITCHING (Feature 3) =====
+
+// [Map Coloring functions remain the same]
 function changeMapLayer(layer) {
     currentLayer = layer;
     colorMap();
 }
 
-/**
- * Colors the map based on the currently selected layer.
- */
 function colorMap() {
   muniLayer.eachLayer(l => {
     const code = l.feature.properties.kunta;
     let fillColor = "#ccc"; 
     let tooltipText = "";
     
-    // Determine color and tooltip based on the selected layer
     if (currentLayer === 'party') {
         const election = electionData[code];
         const party = getLeadingParty(election);
@@ -117,7 +115,7 @@ function colorMap() {
         fillColor = edu !== null && edu !== undefined ? getEducationColor(edu) : "#ccc";
         tooltipText = edu !== null && edu !== undefined ? `${l.feature.properties.name}: ${edu.toFixed(1)}% Higher Edu.` : `${l.feature.properties.name}: N/A`;
         
-    } else if (currentLayer === 'index') { // Combined Index (Feature 7)
+    } else if (currentLayer === 'index') { 
         const index = combinedIndexData[code];
         fillColor = index !== null && index !== undefined ? getCombinedIndexColor(index) : "#ccc";
         tooltipText = index !== null && index !== undefined ? `${l.feature.properties.name}: Index ${index.toFixed(2)} (Lower is better)` : `${l.feature.properties.name}: N/A`;
@@ -130,7 +128,6 @@ function colorMap() {
       fillOpacity: 0.8
     });
     
-    // Update tooltip
     if (l.getTooltip()) { l.getTooltip().setContent(tooltipText); }
     else { l.bindTooltip(tooltipText, { permanent: false, direction: "auto" }); }
   });
@@ -143,13 +140,11 @@ function getLeadingParty(election) {
     const partyKeys = Object.keys(election).filter(k => k !== 'LeadingParty');
     if (partyKeys.length === 0) return 'N/A';
     
-    // Find party with max percentage
     const leading = partyKeys.reduce((a, b) => (election[a] > election[b] ? a : b), 'Other');
     return leading;
 }
 
 function getUnemploymentColor(val) {
-  // Red for high unemployment (bad)
   return val > 10 ? "#800026" :
          val > 8  ? "#BD0026" :
          val > 6  ? "#E31A1C" :
@@ -158,7 +153,6 @@ function getUnemploymentColor(val) {
 }
 
 function getEducationColor(val) {
-  // Green for high education % (good)
   return val > 40 ? "#009e73" :
          val > 30 ? "#56b4e9" :
          val > 20 ? "#f0e442" :
@@ -166,30 +160,38 @@ function getEducationColor(val) {
 }
 
 function getCombinedIndexColor(val) {
-  // Lower index value means better socio-economic condition (darker blue is better)
   return val < 25 ? "#004488" :
          val < 35 ? "#0066CC" :
          val < 45 ? "#56b4e9" :
          val < 55 ? "#ccc" :
-                    "#d55e00"; // Red/Orange for worst index
+                    "#d55e00"; 
 }
 
 
-// ===== SELECT MUNICIPALITY =====
+// [fillSelect, fetchAllData, fetchPxData, and useFallbackData remain the same]
 function fillSelect(features) {
   const select = document.getElementById("muni-select");
-  select.innerHTML = '<option value="">(Select municipality)</option>';
+  select.innerHTML = '';
+  
+  // Add 'Whole Country' option first
+  select.appendChild(new Option("Whole Country", COUNTRY_CODE));
+  
   features
     .sort((a, b) => a.properties.name.localeCompare(b.properties.name))
     .forEach(f => select.appendChild(new Option(f.properties.name, f.properties.kunta)));
   
   select.addEventListener("change", e => {
-    const feature = geoFeatures.find(f => f.properties.kunta == e.target.value);
+    const code = e.target.value;
+    let feature;
+    if (code === COUNTRY_CODE) {
+        feature = { properties: { name: "Whole Country", kunta: COUNTRY_CODE } };
+    } else {
+        feature = geoFeatures.find(f => f.properties.kunta == code);
+    }
     if (feature) showMunicipalityData(feature);
   });
 }
 
-// ===== FETCH ALL DATA (Points 5, 6 - attempts 4 API calls) =====
 async function fetchAllData(aggressiveFallback = false) {
   console.log("Fetching all data (4 datasets)...");
   await Promise.all([
@@ -201,7 +203,6 @@ async function fetchAllData(aggressiveFallback = false) {
   console.log("Data fetching complete. Data keys:", Object.keys(unemploymentData).length);
 }
 
-// ===== GENERIC PxWeb FETCHER (Simplified, skips proxy/complex parsing) =====
 async function fetchPxData(path, storeFn, dataName, aggressiveFallback = false) {
   if (aggressiveFallback) {
       console.warn(`Aggressive fallback triggered for ${dataName}. Skipping StatFin fetch for stable visualization.`);
@@ -210,13 +211,11 @@ async function fetchPxData(path, storeFn, dataName, aggressiveFallback = false) 
   }
   
   try {
-    // Attempt direct fetch (may still fail due to CORS/Structure)
     const url = STATFIN_BASE + path;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
     const json = await res.json();
     
-    // NOTE: Actual PxWeb parsing is complex, this only attempts a simple flat structure parse
     const result = {};
     const dataset = json.dataset;
     const dimensions = dataset.dimension;
@@ -243,29 +242,21 @@ async function fetchPxData(path, storeFn, dataName, aggressiveFallback = false) 
   }
 }
 
-// ===== FALLBACK SOURCES (Ensure robust data for all visualization layers) =====
 async function useFallbackData(storeFn, dataName) {
   let fallbackData = {};
-  
-  // Expanded list of municipality codes (kunta) for major and smaller towns
   const muniCodes = geoFeatures.map(f => f.properties.kunta);
   
-  // --- Unemployment Data ---
   if (dataName === 'Unemployment Rate') {
       const cityData = { "091": 5.5, "049": 4.8, "837": 6.1, "853": 6.7, "564": 7.4, "149": 6.0, "245": 8.2, "440": 7.1 };
-      
       muniCodes.forEach(code => {
           if (cityData[code]) {
               fallbackData[code] = cityData[code];
           } else {
-              // Assign a slight variation around 7.0% for visual effect
               fallbackData[code] = 7.0 + (Math.random() - 0.5) * 2.0; 
           }
       });
       
-  // --- Age Structure Data ---
   } else if (dataName === 'Age Structure') {
-      // Mock Age structure: [0-14, 15-64, 65+] percentages
       const cityData = {
           "091": [13, 67, 20], "049": [17, 65, 18], "837": [15, 63, 22],
           "761": [18, 60, 22], "976": [16, 62, 22] 
@@ -280,9 +271,7 @@ async function useFallbackData(storeFn, dataName) {
           }
       });
       
-  // --- Education Level Data ---
   } else if (dataName === 'Education Level') {
-      // Mock Education Index (% with higher education)
       const cityData = {
           "091": 45, "049": 40, "837": 35, "853": 38, "564": 30, "149": 37, "976": 32, "440": 28
       };
@@ -290,13 +279,11 @@ async function useFallbackData(storeFn, dataName) {
           if (cityData[code]) {
               fallbackData[code] = cityData[code];
           } else {
-              fallbackData[code] = 20 + Math.random() * 15; // 20% to 35%
+              fallbackData[code] = 20 + Math.random() * 15;
           }
       });
       
-  // --- Elections Data ---
   } else if (dataName === 'Elections') {
-      // Mock Party Power (Top 3 parties' % of vote) + Leading Party
       const cityData = {
           "091": { "LeadingParty": "NCP", "NCP": 30, "Greens": 25, "SDP": 15 }, 
           "049": { "LeadingParty": "NCP", "NCP": 32, "SDP": 18, "Greens": 16 }, 
@@ -326,22 +313,20 @@ async function useFallbackData(storeFn, dataName) {
   storeFn(fallbackData);
 }
 
-// ===== COMBINED INDEX CALCULATION (Feature 7) =====
+// [calculateCombinedIndex remains the same]
 function calculateCombinedIndex() {
     console.log("Calculating Socio-Economic Index...");
     
-    // Normalize and combine data: Lower score is better.
-    // Index = (Unemployment % * 2) + (Age 65+ %) + (100 - Higher Education %)
     geoFeatures.forEach(feature => {
         const code = feature.properties.kunta;
         
-        // Get values (use defaults if missing)
         const unemp = unemploymentData[code] || 7.0;
-        const age = ageData[code] || [15, 63, 22]; // Use 65+ (index 2)
+        const age = ageData[code] || [15, 63, 22];
         const edu = educationData[code] || 25;
         
-        const age65Plus = age.length > 2 ? age[2] : 22; // Default to 22%
+        const age65Plus = age.length > 2 ? age[2] : 22;
         
+        // Lower score is better
         const indexValue = (unemp * 2) + age65Plus + (100 - edu);
         
         combinedIndexData[code] = indexValue;
@@ -349,59 +334,161 @@ function calculateCombinedIndex() {
 }
 
 
-// ===== SHOW MUNICIPALITY DATA (Feature 4) =====
+// [calculateCountryAverage and calculateCountryIndexAverage remain the same]
+function calculateCountryAverage() {
+    const muniCodes = geoFeatures.map(f => f.properties.kunta);
+    
+    let totalUnemployment = 0;
+    let totalAge0to14 = 0;
+    let totalAge15to64 = 0;
+    let totalAge65Plus = 0;
+    let totalEducation = 0;
+    let validCount = 0;
+    
+    muniCodes.forEach(code => {
+        const u = unemploymentData[code];
+        const age = ageData[code];
+        const edu = educationData[code];
+        
+        if (typeof u === 'number' && age && age.length === 3 && typeof edu === 'number') {
+            totalUnemployment += u;
+            totalAge0to14 += age[0];
+            totalAge15to64 += age[1];
+            totalAge65Plus += age[2];
+            totalEducation += edu;
+            validCount++;
+        }
+    });
+    
+    if (validCount > 0) {
+        countryAverages = {
+            unemployment: totalUnemployment / validCount,
+            age: [
+                totalAge0to14 / validCount,
+                totalAge15to64 / validCount,
+                totalAge65Plus / validCount
+            ],
+            education: totalEducation / validCount,
+            combinedIndex: calculateCountryIndexAverage(totalUnemployment / validCount, totalAge65Plus / validCount, totalEducation / validCount)
+        };
+        console.log("Country Averages Calculated:", countryAverages);
+    }
+}
+
+function calculateCountryIndexAverage(avgUnemp, avgAge65Plus, avgEdu) {
+    // Uses the same formula as the municipal index calculation
+    return (avgUnemp * 2) + avgAge65Plus + (100 - avgEdu);
+}
+
+
+// NEW/MODIFIED FUNCTION: showMunicipalityData with all comparisons
 function showMunicipalityData(feature) {
   const name = feature.properties.name;
   const code = feature.properties.kunta;
   
-  // Retrieve data by municipality code
-  const u = unemploymentData[code] ?? "N/A";
-  const ageDataPoint = ageData[code];
-  const edu = educationData[code] ?? "N/A";
-  const electionDataPoint = electionData[code];
-  const combinedIndex = combinedIndexData[code] ?? "N/A";
+  let u, ageDataPoint, edu, electionDataPoint, combinedIndex;
+  
+  if (code === COUNTRY_CODE) {
+      // Use country averages
+      u = countryAverages.unemployment ?? "N/A";
+      ageDataPoint = countryAverages.age;
+      edu = countryAverages.education ?? "N/A";
+      combinedIndex = countryAverages.combinedIndex ?? "N/A";
+      electionDataPoint = null; 
+  } else {
+      // Use municipal data
+      u = unemploymentData[code] ?? "N/A";
+      ageDataPoint = ageData[code];
+      edu = educationData[code] ?? "N/A";
+      electionDataPoint = electionData[code];
+      combinedIndex = combinedIndexData[code] ?? "N/A";
+  }
 
+  // Retrieve Country Averages for comparison
+  const countryAvgU = countryAverages.unemployment;
+  const countryAvgAge15_64 = countryAverages.age ? countryAverages.age[1] : null;
+  const countryAvgEdu = countryAverages.education;
+  const countryAvgIndex = countryAverages.combinedIndex;
+  
+  // --- Display Formatting ---
   const uDisplay = typeof u === 'number' ? u.toFixed(1) : u;
-  const ageDisplay = Array.isArray(ageDataPoint) ? `${ageDataPoint[1].toFixed(1)}% (15-64)` : "N/A";
   const eduDisplay = typeof edu === 'number' ? edu.toFixed(1) : edu;
   const indexDisplay = typeof combinedIndex === 'number' ? combinedIndex.toFixed(2) : combinedIndex;
   
-  let leadingParty = getLeadingParty(electionDataPoint);
-  let partyPercentage = (electionDataPoint && electionDataPoint[leadingParty]) ? electionDataPoint[leadingParty].toFixed(1) : 'N/A';
-  let partyDisplay = `${leadingParty} (${partyPercentage}%)`;
+  const muniAge15_64 = Array.isArray(ageDataPoint) ? ageDataPoint[1] : null;
+  const ageDisplay = muniAge15_64 !== null ? `${muniAge15_64.toFixed(1)}% (15-64)` : "N/A";
 
+  let leadingParty = "N/A";
+  let partyDisplay = "N/A (N/A%)";
+  if (electionDataPoint) {
+      leadingParty = getLeadingParty(electionDataPoint);
+      partyPercentage = (electionDataPoint && electionDataPoint[leadingParty]) ? electionDataPoint[leadingParty].toFixed(1) : 'N/A';
+      partyDisplay = `${leadingParty} (${partyPercentage}%)`;
+  }
 
+  // --- Comparison Generators (NEW) ---
+  const getComparisonText = (muniValue, countryAvg, higherIsBetter, unit = 'pp') => {
+      if (typeof muniValue !== 'number' || typeof countryAvg !== 'number' || code === COUNTRY_CODE) return '';
+      
+      const difference = muniValue - countryAvg;
+      let indicator, color;
+      
+      if (higherIsBetter) {
+          indicator = difference > 0.1 ? 'higher than' : (difference < -0.1 ? 'lower than' : 'equal to');
+          color = difference > 0.1 ? 'green' : (difference < -0.1 ? 'red' : 'gray');
+      } else { // Lower is better (Unemployment, Index)
+          indicator = difference > 0.1 ? 'higher than' : (difference < -0.1 ? 'lower than' : 'equal to');
+          color = difference > 0.1 ? 'red' : (difference < -0.1 ? 'green' : 'gray');
+      }
+      
+      return `<br><span style="font-size: 0.9em; color: ${color}; font-weight: 500;">(${Math.abs(difference).toFixed(1)} ${unit} ${indicator} country avg.)</span>`;
+  };
+
+  const unempComparison = getComparisonText(u, countryAvgU, false, 'pp');
+  // Age: Higher working age pop (15-64) is generally better
+  const ageComparison = getComparisonText(muniAge15_64, countryAvgAge15_64, true, 'pp');
+  // Education: Higher % is better
+  const eduComparison = getComparisonText(edu, countryAvgEdu, true, 'pp');
+  // Index: Lower is better
+  const indexComparison = getComparisonText(combinedIndex, countryAvgIndex, false, 'points');
+  
+  
   document.getElementById("muni-select").value = code; // Update the select box
   document.getElementById("selected-info").innerHTML = `
-    <h3>${name} (${code})</h3>
-    <p><b>Unemployment Rate:</b> ${uDisplay}%</p>
-    <p><b>Working Age Pop (15-64):</b> ${ageDisplay}</p>
-    <p><b>Higher Education:</b> ${eduDisplay}%</p>
-    <p><b>Socio-Economic Index:</b> ${indexDisplay} (Lower is better)</p>
+    <h3>${name} (${code === COUNTRY_CODE ? 'FIN' : code})</h3>
+    <p><b>Unemployment Rate:</b> ${uDisplay}% ${unempComparison}</p>
+    <p><b>Working Age Pop (15-64):</b> ${ageDisplay} ${ageComparison}</p>
+    <p><b>Higher Education:</b> ${eduDisplay}% ${eduComparison}</p>
+    <p><b>Socio-Economic Index:</b> ${indexDisplay} (Lower is better) ${indexComparison}</p>
     <p><b>Leading Party:</b> ${partyDisplay}</p>
   `;
   
-  // Update all charts (Feature 4)
-  updateCharts(name, u, ageDataPoint, edu, electionDataPoint);
+  // Update all charts
+  updateCharts(name, u, ageDataPoint, edu, electionDataPoint, countryAvgU);
 }
 
-// ===== CHARTS =====
+// [setupCharts, updateCharts, and downloadChart remain the same]
 function setupCharts() {
   Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
   Chart.defaults.plugins.legend.position = 'bottom';
   
-  // Chart 1: Unemployment
+  // Chart 1: Unemployment (Modified for comparison)
   charts.unemployment = new Chart(document.getElementById("unemploymentChart"), {
     type: "bar",
-    data: { labels: [], datasets: [{ label: "Unemployment Rate (%)", data: [], backgroundColor: "#0073e6" }] },
+    data: { 
+        labels: [], 
+        datasets: [
+            { label: "Municipal Rate (%)", data: [], backgroundColor: "#0073e6" },
+            { label: "Country Average (%)", data: [], backgroundColor: "#E69F00" } // New dataset for average
+        ] 
+    },
     options: { 
         responsive: true, maintainAspectRatio: false, onClick: () => activeChartId = 'unemploymentChart',
-        plugins: { title: { display: true, text: 'Unemployment Rate' } },
+        plugins: { title: { display: true, text: 'Unemployment Rate Comparison' } },
         scales: { y: { beginAtZero: true, suggestedMax: 12 } }
     }
   });
   
-  // Chart 2: Age Distribution
   charts.age = new Chart(document.getElementById("ageChart"), {
     type: "doughnut",
     data: { 
@@ -417,7 +504,6 @@ function setupCharts() {
     }
   });
   
-  // Chart 3: Education Level
   charts.education = new Chart(document.getElementById("educationChart"), {
     type: "pie",
     data: { 
@@ -433,7 +519,6 @@ function setupCharts() {
     }
   });
   
-  // Chart 4: Party Results
   charts.parties = new Chart(document.getElementById("partyChart"), {
     type: "polarArea",
     data: { 
@@ -450,12 +535,15 @@ function setupCharts() {
   });
 }
 
-function updateCharts(name, u, ageDataPoint, edu, electionDataPoint) {
+function updateCharts(name, u, ageDataPoint, edu, electionDataPoint, countryUnempAvg) {
   
-  // 1. Unemployment Chart
+  // 1. Unemployment Chart (Updated)
   const unemploymentValue = parseFloat(u) || 0;
+  const countryAvg = parseFloat(countryUnempAvg) || 0;
+  
   charts.unemployment.data.labels = [name];
   charts.unemployment.data.datasets[0].data = [unemploymentValue];
+  charts.unemployment.data.datasets[1].data = [countryAvg]; // Set country average data
   charts.unemployment.update();
 
   // 2. Age Chart
@@ -480,17 +568,17 @@ function updateCharts(name, u, ageDataPoint, edu, electionDataPoint) {
       
       const backgroundColors = partyKeys.map(party => PARTY_COLORS[party] || PARTY_COLORS['Other']);
       charts.parties.data.datasets[0].backgroundColor = backgroundColors;
+      charts.parties.options.plugins.title.text = "Municipal Election Results (Top Parties)";
       
   } else {
-      // Use default mock data
-      charts.parties.data.labels = ["NCP", "SDP", "Centre"];
-      charts.parties.data.datasets[0].data = [25, 20, 15];
-      charts.parties.data.datasets[0].backgroundColor = [PARTY_COLORS.NCP, PARTY_COLORS.SDP, PARTY_COLORS.Centre, PARTY_COLORS.Other];
+      // Hide party chart if no data (e.g., when 'Whole Country' is selected)
+      charts.parties.data.labels = [];
+      charts.parties.data.datasets[0].data = [];
+      charts.parties.options.plugins.title.text = "Municipal Election Results (N/A for Country)";
   }
   charts.parties.update();
 }
 
-// ===== CHART DOWNLOAD (Feature 8) =====
 function downloadChart() {
     let chart;
     switch(activeChartId) {
