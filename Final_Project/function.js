@@ -1,7 +1,6 @@
 let charts = [];
 let activeChart = null;
 
-// simple store for purchases
 const purchases = [];
 
 // Initialize first chart
