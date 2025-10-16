@@ -26,7 +26,6 @@ main {
   gap: 1em;
 }
 
-/* Sidebar / Menu */
 #menu {
   background: white;
   border-radius: 8px;
@@ -61,7 +60,6 @@ main {
   transform: scale(0.97);
 }
 
-/* Chart Area */
 #chart-area {
   flex: 1;
   display: flex;
@@ -96,7 +94,6 @@ canvas {
   height: 350px;
 }
 
-/* Modal */
 .modal {
   display: none;
   position: fixed;

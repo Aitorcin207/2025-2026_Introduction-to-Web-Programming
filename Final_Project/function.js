@@ -1,8 +1,7 @@
-// Maintain all charts
 let charts = [];
 let activeChart = null;
 
-// simple store for purchases (feature 9)
+// simple store for purchases
 const purchases = [];
 
 // Initialize first chart
@@ -26,13 +25,11 @@ function setupDropzone(container) {
       return;
     }
     const color = document.getElementById("colorPicker").value;
-    // clamp fx days later if needed
     const days = getDaysFromRange(document.getElementById("timeRange").value);
     await fetchDataAndAdd(payload, color, days, container.chart);
   });
 }
 
-// Touch drag support for mobile
 function enableTouchDrag() {
   const draggables = document.querySelectorAll("#draggables div");
   draggables.forEach(el => {
@@ -80,12 +77,9 @@ function enableTouchDrag() {
   });
 }
 
-// Run it on load
 enableTouchDrag();
 
-// Helper to interpret time range
 function getDaysFromRange(val) {
-  // normalize known values; return number or 'max' as fallback
   switch (val) {
     case "1": return 1;
     case "3": return 3;
@@ -99,7 +93,6 @@ function getDaysFromRange(val) {
   }
 }
 
-// Draggable items
 document.querySelectorAll("#draggables div").forEach(el => {
   el.addEventListener("dragstart", e => {
     const payload = {
@@ -113,7 +106,6 @@ document.querySelectorAll("#draggables div").forEach(el => {
   });
 });
 
-// Add new chart
 document.getElementById("addChart").addEventListener("click", () => {
   const section = document.getElementById("chart-area");
   const container = document.createElement("div");
@@ -125,7 +117,6 @@ document.getElementById("addChart").addEventListener("click", () => {
   setupDropzone(container);
 });
 
-// Initialize chart
 function initChart(canvas) {
   const chart = new Chart(canvas.getContext("2d"), {
     type: "line",
@@ -154,7 +145,6 @@ function initChart(canvas) {
   activeChart = chart;
   setupDropzone(canvas.parentElement);
 
-  // set active chart on click to enable download/share of the right chart
   canvas.addEventListener("pointerdown", () => activeChart = chart);
 }
 
@@ -167,7 +157,7 @@ async function fetchDataAndAdd(payload, color, days, chart) {
     } else if (payload.type === "fx") {
       await addFX(payload.base, payload.symbols, color, days, chart);
     } else if (payload.type === "metal") {
-      // unused now
+
     } else {
       console.warn("Unknown payload type", payload);
     }
@@ -177,10 +167,8 @@ async function fetchDataAndAdd(payload, color, days, chart) {
   }
 }
 
-// --- Crypto via CoinGecko (works for tether-gold too) ---
 async function addCrypto(coinId, color, days, chart) {
   try {
-    // CoinGecko market_chart supports days param: 'max' or number
     const daysParam = (days === "max") ? "max" : Math.max(1, days);
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${daysParam}`;
     const res = await fetch(url);
@@ -190,14 +178,11 @@ async function addCrypto(coinId, color, days, chart) {
       console.warn("No price data for", coinId);
       return;
     }
-    // normalize labels as YYYY-MM-DD (daily)
     const labels = data.prices.map(p => {
       const d = new Date(p[0]);
       return d.toISOString().split("T")[0];
     });
-    // values
     const prices = data.prices.map(p => p[1]);
-    // If chart has no labels yet OR labels equal length mismatch, adopt the crypto labels
     chart.data.labels = labels;
     chart.data.datasets.push({
       label: `${coinId} (USD)`,
@@ -211,10 +196,8 @@ async function addCrypto(coinId, color, days, chart) {
   }
 }
 
-// --- FX via ExchangeRate.host (USD→EUR supported) ---
 async function addFX(base, symbols, color, days, chart) {
   try {
-    // Limit to 365 days (ExchangeRate.host free tier)
     let daysNum = (days === "max") ? 365 : Number(days);
     if (!Number.isFinite(daysNum) || daysNum > 365) daysNum = 365;
 
@@ -225,7 +208,6 @@ async function addFX(base, symbols, color, days, chart) {
     const startDate = start.toISOString().split("T")[0];
     const endDate = end.toISOString().split("T")[0];
 
-    // Request time series from ExchangeRate.host
     const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=EUR`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`FX fetch failed: ${res.status}`);
@@ -236,7 +218,6 @@ async function addFX(base, symbols, color, days, chart) {
       return;
     }
 
-    // Extract and sort date labels
     const labels = Object.keys(data.rates).sort();
     const values = labels.map(d => data.rates[d]?.[symbols]).filter(v => v != null);
 
@@ -258,14 +239,13 @@ async function addFX(base, symbols, color, days, chart) {
   }
 }
 
-// --- Merge example: BTC priced in EUR instead of USD ---
 function mergeDataExample(chart) {
   const btcUSD = chart.data.datasets.find(d => d.label?.includes("bitcoin (USD)"));
   const usdEUR = chart.data.datasets.find(d => d.label?.includes("USD/EUR"));
   if (btcUSD && usdEUR && !chart.data.datasets.find(d => d.label?.includes("bitcoin (EUR)"))) {
     const minLen = Math.min(btcUSD.data.length, usdEUR.data.length);
     if (minLen <= 0) return;
-    const merged = btcUSD.data.slice(0, minLen).map((v, i) => v * usdEUR.data[i]); // multiply to convert USD→EUR
+    const merged = btcUSD.data.slice(0, minLen).map((v, i) => v * usdEUR.data[i]);
     chart.data.datasets.push({
       label: "bitcoin (EUR)",
       data: merged,
@@ -297,12 +277,10 @@ document.getElementById("download").addEventListener("click", () => {
   link.click();
 });
 
-// Share (feature 11) - prefer navigator.share when available
 document.getElementById("share").addEventListener("click", async () => {
   if (!activeChart) return;
   try {
     const dataUrl = activeChart.toBase64Image();
-    // convert dataURL to blob
     const res = await fetch(dataUrl);
     const blob = await res.blob();
     const file = new File([blob], "chart.png", { type: blob.type });
@@ -314,7 +292,6 @@ document.getElementById("share").addEventListener("click", async () => {
         files: [file]
       });
     } else {
-      // fallback: open image in new tab so user can save or upload manually
       const w = window.open();
       w.document.write(`<img src="${dataUrl}" alt="chart"><p>Right-click -> Save image or upload to social media</p>`);
     }
@@ -326,7 +303,6 @@ document.getElementById("share").addEventListener("click", async () => {
   }
 });
 
-// Update all charts dynamically on time range change
 document.getElementById("timeRange").addEventListener("change", async () => {
   const newDays = getDaysFromRange(document.getElementById("timeRange").value);
   for (const chart of charts) {
@@ -334,22 +310,17 @@ document.getElementById("timeRange").addEventListener("change", async () => {
     chart.data.datasets = [];
     chart.data.labels = [];
     for (const ds of datasets) {
-      // parse label properly
       const label = ds.label || "";
       if (label.includes("(USD)") && !label.includes("/")) {
-        // crypto label like "bitcoin (USD)"
         const coinId = label.split(" ")[0];
         await addCrypto(coinId, ds.borderColor || "#000", newDays, chart);
       } else if (label.includes("/")) {
-        // FX or similar; consistent format "EUR/USD"
         const parts = label.split("/");
         const base = parts[0].trim();
         const symbols = parts[1].trim();
-        // limit FX to <=365 days
         const allowedDays = (newDays === "max" || Number(newDays) > 365) ? 365 : newDays;
         await addFX(base, symbols, ds.borderColor || "#000", allowedDays, chart);
       } else {
-        // other fallback: try fetch as crypto id (e.g. tether-gold)
         const coinId = label.split(" ")[0];
         await addCrypto(coinId, ds.borderColor || "#000", newDays, chart);
       }
@@ -357,7 +328,7 @@ document.getElementById("timeRange").addEventListener("change", async () => {
   }
 });
 
-// --- Purchases (Feature 9) ---
+// Purchases
 document.getElementById("buyForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const coin = document.getElementById("buyCoin").value.trim();
@@ -367,10 +338,8 @@ document.getElementById("buyForm").addEventListener("submit", async (e) => {
     alert("Please enter valid coin id, date and amount.");
     return;
   }
-  // Store purchase
   purchases.push({ coin, date, amount });
   await updatePortfolioSummary();
-  // clear inputs
   document.getElementById("buyForm").reset();
 });
 
@@ -380,14 +349,12 @@ async function updatePortfolioSummary() {
   const summary = [];
   let totalCurrentValue = 0;
   for (const p of purchases) {
-    // fetch historical price at purchase date (CoinGecko historical endpoint)
     try {
       const histUrl = `https://api.coingecko.com/api/v3/coins/${p.coin}/history?date=${formatDateForCG(p.date)}`;
       const histRes = await fetch(histUrl);
       if (!histRes.ok) throw new Error(histRes.status);
       const histData = await histRes.json();
       const boughtPrice = histData.market_data && histData.market_data.current_price && histData.market_data.current_price.usd;
-      // fetch current price
       const curUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${p.coin}&vs_currencies=usd`;
       const curRes = await fetch(curUrl);
       const curData = await curRes.json();
@@ -412,9 +379,6 @@ async function updatePortfolioSummary() {
   }
   container.innerHTML = `<strong>Portfolio</strong><br>${summary.join("<br>")}<br><strong>Total current value:</strong> ${totalCurrentValue.toFixed(2)} USD`;
 }
-
-// === USD ↔ EUR Exchange Rate Section ===
-// Uses the Frankfurter API (no API key required, supports time series, HTTPS, CORS)
 
 let fxChart;
 
@@ -488,7 +452,6 @@ async function fetchUSD_EUR_Frankfurter(days, chart) {
   }
 }
 
-// Load data based on time range
 async function loadFXRange(days) {
   fxChart.data.labels = [];
   fxChart.data.datasets = [];
@@ -496,7 +459,6 @@ async function loadFXRange(days) {
   await fetchUSD_EUR_Frankfurter(days, fxChart);
 }
 
-// Download CSV of FX chart
 function downloadFXCSV() {
   if (!fxChart || !fxChart.data.labels.length) {
     alert("No data to download yet!");
@@ -518,7 +480,6 @@ function downloadFXCSV() {
   a.click();
 }
 
-// Download PNG of FX chart
 function downloadFXPNG() {
   if (!fxChart) {
     alert("FX chart not ready yet!");
@@ -530,16 +491,14 @@ function downloadFXPNG() {
   link.click();
 }
 
-// Initialize FX chart and load default range
 window.addEventListener("DOMContentLoaded", () => {
   initFXChart();
-  loadFXRange("365"); // default: 1 year
+  loadFXRange("365");
 });
 
 
 
 function formatDateForCG(dateStr) {
-  // CoinGecko wants dd-mm-yyyy
   const d = new Date(dateStr);
   const dd = String(d.getUTCDate()).padStart(2, "0");
   const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
@@ -547,10 +506,8 @@ function formatDateForCG(dateStr) {
   return `${dd}-${mm}-${yyyy}`;
 }
 
-// ---------- FX with selectable target currency ----------
-
-let fxCurrentTarget = "EUR";   // default target currency
-let fxCurrentDays = "365";     // default time span
+let fxCurrentTarget = "EUR";
+let fxCurrentDays = "365";
 
 function initFXChart() {
   const ctx = document.getElementById("fxChart").getContext("2d");
@@ -585,21 +542,17 @@ function initFXChart() {
   });
 }
 
-// Called when user changes the target currency in dropdown
 function onFXTargetChange() {
   const sel = document.getElementById("fxTargetSelect");
   fxCurrentTarget = sel.value;
-  // reload with existing days
   loadFXRange(fxCurrentDays);
 }
 
-// Fetch USD → target currency via Frankfurter (or exchangerate.host) API
 async function fetchUSDToTarget(days, chart) {
   try {
     const end = new Date();
     const start = new Date();
     if (days === "max") {
-      // you can choose a cap, e.g. 10 years
       start.setFullYear(end.getFullYear() - 10);
     } else {
       start.setDate(end.getDate() - Number(days));
@@ -608,7 +561,6 @@ async function fetchUSDToTarget(days, chart) {
     const s = start.toISOString().split("T")[0];
     const e = end.toISOString().split("T")[0];
 
-    // Use Frankfurter endpoint for timeseries USD -> target
     const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${fxCurrentTarget}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Frankfurter fetch error: ${res.status}`);
@@ -620,7 +572,6 @@ async function fetchUSDToTarget(days, chart) {
       return rec ? rec[fxCurrentTarget] : null;
     });
 
-    // Update chart
     chart.data.labels = dates;
     chart.data.datasets = [
       {
@@ -643,7 +594,6 @@ async function fetchUSDToTarget(days, chart) {
   }
 }
 
-// Load FX data for a time range (days or “max”)
 async function loadFXRange(days) {
   fxCurrentDays = days;
   if (!fxChart) initFXChart();
@@ -653,7 +603,6 @@ async function loadFXRange(days) {
   await fetchUSDToTarget(days, fxChart);
 }
 
-// CSV download for FX chart
 function downloadFXCSV() {
   if (!fxChart || !fxChart.data.labels.length) {
     alert("No FX data to download yet!");
@@ -669,12 +618,10 @@ function downloadFXCSV() {
   const blob = new Blob([csv], { type: "text/csv" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  // name with currency code
   a.download = `USD_${fxCurrentTarget}_exchange.csv`;
   a.click();
 }
 
-// PNG download for FX
 function downloadFXPNG() {
   if (!fxChart) {
     alert("FX chart not ready!");
@@ -686,7 +633,6 @@ function downloadFXPNG() {
   link.click();
 }
 
-// Initialize when page loads
 window.addEventListener("DOMContentLoaded", () => {
   initFXChart();
   loadFXRange("365");
