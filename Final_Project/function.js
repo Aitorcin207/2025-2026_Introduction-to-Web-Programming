@@ -32,6 +32,57 @@ function setupDropzone(container) {
   });
 }
 
+// Touch drag support for mobile
+function enableTouchDrag() {
+  const draggables = document.querySelectorAll("#draggables div");
+  draggables.forEach(el => {
+    el.addEventListener("touchstart", e => {
+      const touch = e.touches[0];
+      const payload = {
+        type: el.dataset.type,
+        id: el.dataset.id,
+        base: el.dataset.base,
+        symbols: el.dataset.symbols,
+        symbol: el.dataset.symbol
+      };
+      el.dataset.dragPayload = JSON.stringify(payload);
+      const ghost = el.cloneNode(true);
+      ghost.style.position = "fixed";
+      ghost.style.opacity = "0.7";
+      ghost.style.left = touch.pageX + "px";
+      ghost.style.top = touch.pageY + "px";
+      ghost.id = "ghost-drag";
+      document.body.appendChild(ghost);
+    });
+
+    el.addEventListener("touchmove", e => {
+      const ghost = document.getElementById("ghost-drag");
+      if (ghost) {
+        const touch = e.touches[0];
+        ghost.style.left = touch.pageX + "px";
+        ghost.style.top = touch.pageY + "px";
+      }
+    });
+
+    el.addEventListener("touchend", e => {
+      const ghost = document.getElementById("ghost-drag");
+      if (ghost) ghost.remove();
+
+      const touch = e.changedTouches[0];
+      const dropzone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".dropzone");
+      if (dropzone) {
+        const payload = JSON.parse(el.dataset.dragPayload);
+        const color = document.getElementById("colorPicker").value;
+        const days = getDaysFromRange(document.getElementById("timeRange").value);
+        fetchDataAndAdd(payload, color, days, dropzone.chart);
+      }
+    });
+  });
+}
+
+// Run it on load
+enableTouchDrag();
+
 // Helper to interpret time range
 function getDaysFromRange(val) {
   // normalize known values; return number or 'max' as fallback

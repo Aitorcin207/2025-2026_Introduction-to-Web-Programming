@@ -9,6 +9,7 @@ body {
   margin: 0;
   background: var(--light-bg);
   color: #222;
+  overflow-x: hidden;
 }
 
 header {
@@ -25,6 +26,7 @@ main {
   gap: 1em;
 }
 
+/* Sidebar / Menu */
 #menu {
   background: white;
   border-radius: 8px;
@@ -32,6 +34,18 @@ main {
   width: 250px;
   box-shadow: var(--shadow);
   flex-shrink: 0;
+  max-height: 85vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #bbb #f5f8fc;
+}
+
+#menu::-webkit-scrollbar {
+  width: 6px;
+}
+#menu::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 3px;
 }
 
 #draggables div {
@@ -41,8 +55,13 @@ main {
   margin-bottom: 0.5em;
   cursor: grab;
   user-select: none;
+  transition: transform 0.1s;
+}
+#draggables div:active {
+  transform: scale(0.97);
 }
 
+/* Chart Area */
 #chart-area {
   flex: 1;
   display: flex;
@@ -59,13 +78,14 @@ main {
   flex: 1 1 400px;
   max-width: 600px;
   min-width: 300px;
+  overflow: hidden;
 }
 
 .dropzone {
   border: 2px dashed #ccc;
   position: relative;
+  transition: background 0.2s, border-color 0.2s;
 }
-
 .dropzone.dragover {
   border-color: var(--blue);
   background: #eef5ff;
@@ -107,11 +127,37 @@ canvas {
 @media (max-width: 768px) {
   main {
     flex-direction: column;
+    padding: 0.5em;
   }
+
   #menu {
     width: 100%;
+    max-height: none;
+    order: 2;
   }
+
+  #chart-area {
+    width: 100%;
+    order: 1;
+  }
+
   .chart-container {
+    width: 100%;
     min-width: 100%;
+    max-width: 100%;
+    height: auto;
+  }
+
+  canvas {
+    height: 250px;
+  }
+
+  header h1 {
+    font-size: 1.4em;
+  }
+
+  #menu button, #menu select, #menu input {
+    width: 100%;
+    margin-top: 0.5em;
   }
 }
