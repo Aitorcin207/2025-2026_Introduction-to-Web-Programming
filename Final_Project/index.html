@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/x-icon" href="finland_countryball.ico">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Money & Crypto Portal</title>
-  <link rel="stylesheet" href="style.css">
-
+  <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
     <h1>Money & Crypto Portal</h1>
-    <p>Visualize and compare currencies, cryptos, and metals in real time.</p>
+    <p>Visualize and compare currencies, cryptos, and commodity-like assets in real time.</p>
   </header>
 
   <main>
@@ -22,9 +20,11 @@
         <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
         <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
         <div draggable="true" data-type="crypto" data-id="dogecoin">Dogecoin (DOGE)</div>
-        <div draggable="true" data-type="fx" data-base="EUR" data-symbols="USD">EUR → USD</div>
-        <div draggable="true" data-type="fx" data-base="USD" data-symbols="EUR">USD → EUR</div>
-        <div draggable="true" data-type="metal" data-symbol="XAU">Gold (XAU/USD)</div>
+        <!-- FX items: use slash "/" to keep consistent label format -->
+        <div draggable="true" data-type="fx" data-base="EUR" data-symbols="USD">EUR/USD</div>
+        <div draggable="true" data-type="fx" data-base="USD" data-symbols="EUR">USD/EUR</div>
+        <!-- Replaced metal gold with a coin that represents gold (Tether Gold) -->
+        <div draggable="true" data-type="crypto" data-id="tether-gold">Tether Gold (XAUT)</div>
       </div>
 
       <h3>Options</h3>
@@ -45,8 +45,23 @@
         <input type="color" id="colorPicker" value="#ff6384">
       </label>
 
-      <button id="addChart">Add New Chart</button>
-      <button id="download">Download Active Chart</button>
+      <div style="margin-top:10px;">
+        <button id="addChart">Add New Chart</button>
+        <button id="download">Download Active Chart</button>
+        <button id="share">Share Active Chart</button>
+      </div>
+
+      <hr>
+
+      <h3>My Purchases (Feature 9)</h3>
+      <form id="buyForm">
+        <label>Coin ID (e.g. bitcoin): <input id="buyCoin" placeholder="bitcoin"></label><br>
+        <label>Date (YYYY-MM-DD): <input id="buyDate" type="date"></label><br>
+        <label>Amount (units): <input id="buyAmount" type="number" step="any" min="0"></label><br>
+        <button type="submit">Add Purchase</button>
+      </form>
+      <div id="portfolioSummary"></div>
+
     </aside>
 
     <section id="chart-area">
@@ -66,9 +81,7 @@
   </div>
 
   <footer>
-    Data from <a href="https://www.coingecko.com/en/api">CoinGecko</a>,
-    <a href="https://exchangerate.host">Exchangerate.host</a>, and
-    <a href="https://metals.dev/">Metals.dev</a>.
+    Data from CoinGecko, Exchangerate.host. Tether Gold (XAUT) is used as a gold-like asset via CoinGecko.
   </footer>
 
   <script src="function.js"></script>
