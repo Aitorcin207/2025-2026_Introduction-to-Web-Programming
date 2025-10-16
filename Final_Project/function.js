@@ -546,3 +546,148 @@ function formatDateForCG(dateStr) {
   const yyyy = d.getUTCFullYear();
   return `${dd}-${mm}-${yyyy}`;
 }
+
+// ---------- FX with selectable target currency ----------
+
+let fxCurrentTarget = "EUR";   // default target currency
+let fxCurrentDays = "365";     // default time span
+
+function initFXChart() {
+  const ctx = document.getElementById("fxChart").getContext("2d");
+  fxChart = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: false },
+      onClick: (e, elements) => {
+        if (elements.length) {
+          const el = elements[0];
+          const ds = fxChart.data.datasets[el.datasetIndex];
+          const date = fxChart.data.labels[el.index];
+          const value = ds.data[el.index];
+          showModal(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
+        }
+      },
+      plugins: {
+        title: {
+          display: true,
+          text: () => `USD ↔ ${fxCurrentTarget} Exchange Rate Over Time`
+        },
+        legend: { display: true }
+      },
+      scales: {
+        x: { title: { display: true, text: "Date" } },
+        y: { title: { display: true, text: "Rate" } }
+      }
+    }
+  });
+}
+
+// Called when user changes the target currency in dropdown
+function onFXTargetChange() {
+  const sel = document.getElementById("fxTargetSelect");
+  fxCurrentTarget = sel.value;
+  // reload with existing days
+  loadFXRange(fxCurrentDays);
+}
+
+// Fetch USD → target currency via Frankfurter (or exchangerate.host) API
+async function fetchUSDToTarget(days, chart) {
+  try {
+    const end = new Date();
+    const start = new Date();
+    if (days === "max") {
+      // you can choose a cap, e.g. 10 years
+      start.setFullYear(end.getFullYear() - 10);
+    } else {
+      start.setDate(end.getDate() - Number(days));
+    }
+
+    const s = start.toISOString().split("T")[0];
+    const e = end.toISOString().split("T")[0];
+
+    // Use Frankfurter endpoint for timeseries USD -> target
+    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${fxCurrentTarget}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Frankfurter fetch error: ${res.status}`);
+    const data = await res.json();
+
+    const dates = Object.keys(data.rates).sort();
+    const values = dates.map(d => {
+      const rec = data.rates[d];
+      return rec ? rec[fxCurrentTarget] : null;
+    });
+
+    // Update chart
+    chart.data.labels = dates;
+    chart.data.datasets = [
+      {
+        label: `USD/${fxCurrentTarget}`,
+        data: values,
+        borderColor: "#ff6600",
+        fill: false
+      },
+      {
+        label: `${fxCurrentTarget}/USD`,
+        data: values.map(v => (v != null ? 1 / v : null)),
+        borderColor: "#00ccff",
+        fill: false
+      }
+    ];
+    chart.update();
+
+  } catch (err) {
+    console.error("fetchUSDToTarget failed:", err);
+  }
+}
+
+// Load FX data for a time range (days or “max”)
+async function loadFXRange(days) {
+  fxCurrentDays = days;
+  if (!fxChart) initFXChart();
+  fxChart.data.labels = [];
+  fxChart.data.datasets = [];
+  fxChart.update();
+  await fetchUSDToTarget(days, fxChart);
+}
+
+// CSV download for FX chart
+function downloadFXCSV() {
+  if (!fxChart || !fxChart.data.labels.length) {
+    alert("No FX data to download yet!");
+    return;
+  }
+  const labels = fxChart.data.labels;
+  const datasets = fxChart.data.datasets;
+  let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  for (let i = 0; i < labels.length; i++) {
+    const row = [labels[i], ...datasets.map(d => (d.data[i] != null ? d.data[i] : ""))];
+    csv += row.join(",") + "\n";
+  }
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  // name with currency code
+  a.download = `USD_${fxCurrentTarget}_exchange.csv`;
+  a.click();
+}
+
+// PNG download for FX
+function downloadFXPNG() {
+  if (!fxChart) {
+    alert("FX chart not ready!");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = fxChart.toBase64Image();
+  link.download = `USD_${fxCurrentTarget}_exchange.png`;
+  link.click();
+}
+
+// Initialize when page loads
+window.addEventListener("DOMContentLoaded", () => {
+  initFXChart();
+  loadFXRange("365");
+});
