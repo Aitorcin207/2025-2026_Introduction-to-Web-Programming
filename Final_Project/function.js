@@ -428,14 +428,20 @@ function initFXChart() {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "nearest", intersect: false },
+      onClick: (e, elements) => {
+        if (elements.length) {
+          const el = elements[0];
+          const dataset = fxChart.data.datasets[el.datasetIndex];
+          const date = fxChart.data.labels[el.index];
+          const value = dataset.data[el.index];
+          showModal(`${dataset.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(4)}`);
+        }
+      },
       plugins: {
         title: { display: true, text: "USD ↔ EUR Exchange Rate Over Time" },
         legend: { display: true }
       },
-      scales: {
-        x: { title: { display: true, text: "Date" } },
-        y: { title: { display: true, text: "Rate" } }
-      }
+
     }
   });
 }
@@ -510,6 +516,18 @@ function downloadFXCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = "usd_eur_exchange.csv";
   a.click();
+}
+
+// Download PNG of FX chart
+function downloadFXPNG() {
+  if (!fxChart) {
+    alert("FX chart not ready yet!");
+    return;
+  }
+  const link = document.createElement("a");
+  link.href = fxChart.toBase64Image();
+  link.download = "usd_eur_exchange.png";
+  link.click();
 }
 
 // Initialize FX chart and load default range
