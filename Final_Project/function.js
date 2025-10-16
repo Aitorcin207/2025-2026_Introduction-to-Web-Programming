@@ -211,66 +211,61 @@ async function addCrypto(coinId, color, days, chart) {
   }
 }
 
-// --- FX via exchangerate.host ---
+// --- FX via ExchangeRate.host (USD→EUR supported) ---
 async function addFX(base, symbols, color, days, chart) {
   try {
-    // exchangerate.host free historical time window is limited — avoid huge ranges
+    // Limit to 365 days (ExchangeRate.host free tier)
     let daysNum = (days === "max") ? 365 : Number(days);
-    if (!Number.isFinite(daysNum) || daysNum > 365) {
-      console.warn("FX request limited to 365 days (exchangerate.host free). Requested:", days);
-      daysNum = 365;
-    }
+    if (!Number.isFinite(daysNum) || daysNum > 365) daysNum = 365;
+
     const end = new Date();
     const start = new Date();
     start.setDate(end.getDate() - daysNum);
 
-    const s = start.toISOString().split("T")[0];
-    const e = end.toISOString().split("T")[0];
-    // timeseries endpoint
-    const url = `https://api.exchangerate.host/timeseries?base=${base}&symbols=${symbols}&start_date=${s}&end_date=${e}`;
+    const startDate = start.toISOString().split("T")[0];
+    const endDate = end.toISOString().split("T")[0];
+
+    // Request time series from ExchangeRate.host
+    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=EUR`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`FX fetch ${res.status}`);
+    if (!res.ok) throw new Error(`FX fetch failed: ${res.status}`);
     const data = await res.json();
 
-    if (!data.success || !data.rates) {
-      console.warn(`No FX data for ${base}/${symbols} in selected range.`);
+    if (!data.rates || Object.keys(data.rates).length === 0) {
+      console.warn(`No FX data for ${base}/${symbols}`);
       return;
     }
 
+    // Extract and sort date labels
     const labels = Object.keys(data.rates).sort();
-    const values = labels.map(d => {
-      const r = data.rates[d];
-      return (r && r[symbols] != null) ? r[symbols] : null;
-    }).filter(v => v != null);
+    const values = labels.map(d => data.rates[d]?.[symbols]).filter(v => v != null);
 
-    if (values.length > 0) {
-      chart.data.labels = labels;
-      chart.data.datasets.push({
-        label: `${base}/${symbols}`,
-        data: values,
-        borderColor: color,
-        fill: false
-      });
-      chart.update();
-    } else {
-      console.warn(`Empty FX response for ${base}/${symbols}`);
+    if (!values.length) {
+      console.warn(`Empty FX values for ${base}/${symbols}`);
+      return;
     }
+
+    chart.data.labels = labels;
+    chart.data.datasets.push({
+      label: `${base}/${symbols}`,
+      data: values,
+      borderColor: color,
+      fill: false
+    });
+    chart.update();
   } catch (err) {
     console.error(`FX fetch failed for ${base}/${symbols}:`, err);
   }
 }
 
-// --- Merge/Combined data example ---
+// --- Merge example: BTC priced in EUR instead of USD ---
 function mergeDataExample(chart) {
-  const btc = chart.data.datasets.find(d => d.label && d.label.includes("bitcoin"));
-  const fx = chart.data.datasets.find(d => d.label && d.label.includes("EUR/USD"));
-  if (btc && fx && !chart.data.datasets.find(d => d.label && d.label.includes("bitcoin (EUR)"))) {
-    const minLen = Math.min(btc.data.length, fx.data.length);
+  const btcUSD = chart.data.datasets.find(d => d.label?.includes("bitcoin (USD)"));
+  const usdEUR = chart.data.datasets.find(d => d.label?.includes("USD/EUR"));
+  if (btcUSD && usdEUR && !chart.data.datasets.find(d => d.label?.includes("bitcoin (EUR)"))) {
+    const minLen = Math.min(btcUSD.data.length, usdEUR.data.length);
     if (minLen <= 0) return;
-    const merged = btc.data.slice(0, minLen).map((v, i) => {
-      // align indices (labels may differ) — simple position-based mapping
-      return v / fx.data[i];
-    });
+    const merged = btcUSD.data.slice(0, minLen).map((v, i) => v * usdEUR.data[i]); // multiply to convert USD→EUR
     chart.data.datasets.push({
       label: "bitcoin (EUR)",
       data: merged,
@@ -417,6 +412,113 @@ async function updatePortfolioSummary() {
   }
   container.innerHTML = `<strong>Portfolio</strong><br>${summary.join("<br>")}<br><strong>Total current value:</strong> ${totalCurrentValue.toFixed(2)} USD`;
 }
+
+// === USD ↔ EUR Exchange Rate Section ===
+// Uses the Frankfurter API (no API key required, supports time series, HTTPS, CORS)
+
+let fxChart;
+
+// Initialize FX chart
+function initFXChart() {
+  const ctx = document.getElementById("fxChart").getContext("2d");
+  fxChart = new Chart(ctx, {
+    type: "line",
+    data: { labels: [], datasets: [] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: "nearest", intersect: false },
+      plugins: {
+        title: { display: true, text: "USD ↔ EUR Exchange Rate Over Time" },
+        legend: { display: true }
+      },
+      scales: {
+        x: { title: { display: true, text: "Date" } },
+        y: { title: { display: true, text: "Rate" } }
+      }
+    }
+  });
+}
+
+// Fetch USD↔EUR data via Frankfurter API
+async function fetchUSD_EUR_Frankfurter(days, chart) {
+  try {
+    const end = new Date();
+    const start = new Date();
+
+    if (days === "max") start.setFullYear(end.getFullYear() - 10);
+    else start.setDate(end.getDate() - Number(days));
+
+    const s = start.toISOString().split("T")[0];
+    const e = end.toISOString().split("T")[0];
+
+    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=EUR`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Frankfurter ${res.status}`);
+    const data = await res.json();
+
+    const labels = Object.keys(data.rates).sort();
+    const usdToEur = labels.map(d => data.rates[d]?.EUR ?? null);
+    const eurToUsd = usdToEur.map(v => (v ? 1 / v : null));
+
+    chart.data.labels = labels;
+    chart.data.datasets = [
+      {
+        label: "USD/EUR",
+        data: usdToEur,
+        borderColor: "#ff6600",
+        fill: false
+      },
+      {
+        label: "EUR/USD",
+        data: eurToUsd,
+        borderColor: "#00ccff",
+        fill: false
+      }
+    ];
+    chart.update();
+  } catch (err) {
+    console.error("Frankfurter fetch failed:", err);
+  }
+}
+
+// Load data based on time range
+async function loadFXRange(days) {
+  fxChart.data.labels = [];
+  fxChart.data.datasets = [];
+  fxChart.update();
+  await fetchUSD_EUR_Frankfurter(days, fxChart);
+}
+
+// Download CSV of FX chart
+function downloadFXCSV() {
+  if (!fxChart || !fxChart.data.labels.length) {
+    alert("No data to download yet!");
+    return;
+  }
+  const labels = fxChart.data.labels;
+  const datasets = fxChart.data.datasets;
+  let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
+
+  for (let i = 0; i < labels.length; i++) {
+    const row = [labels[i], ...datasets.map(d => d.data[i] ?? "")];
+    csv += row.join(",") + "\n";
+  }
+
+  const blob = new Blob([csv], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "usd_eur_exchange.csv";
+  a.click();
+}
+
+// Initialize FX chart and load default range
+window.addEventListener("DOMContentLoaded", () => {
+  initFXChart();
+  loadFXRange("365"); // default: 1 year
+});
+
+
 
 function formatDateForCG(dateStr) {
   // CoinGecko wants dd-mm-yyyy
