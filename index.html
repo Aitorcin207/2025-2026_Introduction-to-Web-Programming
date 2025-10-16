@@ -3,27 +3,75 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Finland Population Chart</title>
+  <title>Data Center Finland</title>
+  <!-- New: Favicon -->
+  <link rel="icon" type="image/x-icon" href="finland_countryball.ico">
+  <link rel="stylesheet" href="style.css" />
 
-  <link rel="stylesheet" href="style.css">
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Import Frappe Charts -->
-  <script src="https://unpkg.com/frappe-charts@latest/dist/frappe-charts.min.umd.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
-  <h1>Population of Finland (2000-2021)</h1>
+  <header>
+    <h1>Data Center Finland: Municipal Statistics</h1>
+  </header>
 
-  <!-- Form for selecting municipality -->
-  <div id="form-container">
-    <input type="text" id="input-area" placeholder="Enter municipality (e.g. Helsinki)" />
-    <button id="submit-data">Show data</button>
-    <button id="add-data">Add prediction</button>
-    <button id="navigation">Go to Births/Deaths Chart</button>
-  </div>
+  <main>
+    <section id="map-section">
+      <div id="map"></div>
+      
+      <!-- Map Layer Selection (Feature for 2 points) -->
+      <div id="map-layer-selector">
+        <label>Map Layer:</label>
+        <select id="layer-select" onchange="changeMapLayer(this.value)">
+            <option value="party">Leading Party</option>
+            <option value="unemployment">Unemployment Rate</option>
+            <option value="education">Higher Education %</option>
+            <option value="index">Socio-Economic Index</option>
+        </select>
+        <div id="legend"></div>
+      </div>
+      
+    </section>
 
-  <!-- Chart container -->
-  <div id="chart"></div>
+    <section id="info-section">
+      <div class="selector">
+        <label for="muni-select">Select municipality:</label>
+        <select id="muni-select">
+          <option>Loading...</option>
+        </select>
+      </div>
 
-  <script src="functions.js"></script>
+      <div id="selected-info">
+        <h3>Select a municipality on the map or from the list.</h3>
+        <p>This application visualizes municipal data including elections, economy, and demographics.</p>
+      </div>
+
+      <div class="charts">
+        <!-- Button to download the currently active chart (Feature for 2 points) -->
+        <button id="downloadChartBtn">Download Current Chart (PNG)</button>
+        
+        <canvas id="unemploymentChart"></canvas>
+        <canvas id="ageChart"></canvas>
+        <canvas id="educationChart"></canvas>
+        <canvas id="partyChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Data source: 
+      <a href="https://statfin.stat.fi/PxWeb/pxweb/en/StatFin/" target="_blank">Tilastokeskus (StatFin)</a>, 
+      <a href="https://www.avoindata.fi/en" target="_blank">Open Data Finland</a>
+    </p>
+  </footer>
+
+  <script src="https://unpkg.com/topojson-client@3"></script>
+  <script src="function.js"></script>
 </body>
 </html>

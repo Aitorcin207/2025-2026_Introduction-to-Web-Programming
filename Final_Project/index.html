@@ -1,77 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Center Finland</title>
-  <!-- New: Favicon -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/x-icon" href="finland_countryball.ico">
-  <link rel="stylesheet" href="style.css" />
+  <title>Money & Crypto Portal</title>
+  <link rel="stylesheet" href="style.css">
 
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
   <header>
-    <h1>Data Center Finland: Municipal Statistics</h1>
+    <h1>Money & Crypto Portal</h1>
+    <p>Visualize and compare currencies, cryptos, and metals in real time.</p>
   </header>
 
   <main>
-    <section id="map-section">
-      <div id="map"></div>
-      
-      <!-- Map Layer Selection (Feature for 2 points) -->
-      <div id="map-layer-selector">
-        <label>Map Layer:</label>
-        <select id="layer-select" onchange="changeMapLayer(this.value)">
-            <option value="party">Leading Party</option>
-            <option value="unemployment">Unemployment Rate</option>
-            <option value="education">Higher Education %</option>
-            <option value="index">Socio-Economic Index</option>
+    <aside id="menu">
+      <h2>Data Sources</h2>
+      <div id="draggables">
+        <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
+        <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
+        <div draggable="true" data-type="crypto" data-id="dogecoin">Dogecoin (DOGE)</div>
+        <div draggable="true" data-type="fx" data-base="EUR" data-symbols="USD">EUR → USD</div>
+        <div draggable="true" data-type="fx" data-base="USD" data-symbols="EUR">USD → EUR</div>
+        <div draggable="true" data-type="metal" data-symbol="XAU">Gold (XAU/USD)</div>
+      </div>
+
+      <h3>Options</h3>
+      <label>Time Range:
+        <select id="timeRange">
+          <option value="1">1 day</option>
+          <option value="3">3 days</option>
+          <option value="7">7 days</option>
+          <option value="30" selected>30 days</option>
+          <option value="90">90 days</option>
+          <option value="365">1 year</option>
+          <option value="3650">10 years</option>
+          <option value="max">Max</option>
         </select>
-        <div id="legend"></div>
-      </div>
-      
-    </section>
+      </label>
 
-    <section id="info-section">
-      <div class="selector">
-        <label for="muni-select">Select municipality:</label>
-        <select id="muni-select">
-          <option>Loading...</option>
-        </select>
-      </div>
+      <label>Color:
+        <input type="color" id="colorPicker" value="#ff6384">
+      </label>
 
-      <div id="selected-info">
-        <h3>Select a municipality on the map or from the list.</h3>
-        <p>This application visualizes municipal data including elections, economy, and demographics.</p>
-      </div>
+      <button id="addChart">Add New Chart</button>
+      <button id="download">Download Active Chart</button>
+    </aside>
 
-      <div class="charts">
-        <!-- Button to download the currently active chart (Feature for 2 points) -->
-        <button id="downloadChartBtn">Download Current Chart (PNG)</button>
-        
-        <canvas id="unemploymentChart"></canvas>
-        <canvas id="ageChart"></canvas>
-        <canvas id="educationChart"></canvas>
-        <canvas id="partyChart"></canvas>
+    <section id="chart-area">
+      <div class="chart-container dropzone active">
+        <canvas></canvas>
       </div>
     </section>
   </main>
 
+  <!-- Modal for detailed data -->
+  <div id="infoModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Data Point Information</h3>
+      <p id="modalBody"></p>
+    </div>
+  </div>
+
   <footer>
-    <p>Data source: 
-      <a href="https://statfin.stat.fi/PxWeb/pxweb/en/StatFin/" target="_blank">Tilastokeskus (StatFin)</a>, 
-      <a href="https://www.avoindata.fi/en" target="_blank">Open Data Finland</a>
-    </p>
+    Data from <a href="https://www.coingecko.com/en/api">CoinGecko</a>,
+    <a href="https://exchangerate.host">Exchangerate.host</a>, and
+    <a href="https://metals.dev/">Metals.dev</a>.
   </footer>
 
-  <script src="https://unpkg.com/topojson-client@3"></script>
   <script src="function.js"></script>
 </body>
 </html>

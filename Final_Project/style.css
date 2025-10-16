@@ -1,149 +1,117 @@
+:root {
+  --blue: #004aad;
+  --light-bg: #f5f8fc;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
 body {
+  font-family: Arial, sans-serif;
   margin: 0;
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f4f6fb;
+  background: var(--light-bg);
   color: #222;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
 }
 
 header {
-  background: #003580;
+  background: var(--blue);
   color: white;
+  padding: 1em;
   text-align: center;
-  padding: 1rem;
-  font-size: 1.8rem;
 }
 
 main {
   display: flex;
   flex-wrap: wrap;
-  padding: 1rem;
-  gap: 1.5rem; /* Increased gap for better spacing */
+  padding: 1em;
+  gap: 1em;
+}
+
+#menu {
+  background: white;
+  border-radius: 8px;
+  padding: 1em;
+  width: 250px;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+
+#draggables div {
+  background: #e8efff;
+  padding: 0.6em;
+  border-radius: 6px;
+  margin-bottom: 0.5em;
+  cursor: grab;
+  user-select: none;
+}
+
+#chart-area {
   flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  justify-content: center;
 }
 
-#map-section {
-  flex: 1 1 55%;
+.chart-container {
+  background: white;
+  border-radius: 8px;
+  padding: 1em;
+  box-shadow: var(--shadow);
+  flex: 1 1 400px;
+  max-width: 600px;
+  min-width: 300px;
+}
+
+.dropzone {
+  border: 2px dashed #ccc;
   position: relative;
-  min-height: 75vh; /* Ensure map section has a minimum height */
-  min-width: 320px;
 }
 
-#map {
+.dropzone.dragover {
+  border-color: var(--blue);
+  background: #eef5ff;
+}
+
+canvas {
   width: 100%;
-  height: 100%; /* Fill the container */
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  height: 350px;
 }
 
-#info-section {
-  flex: 1 1 40%;
-  min-width: 320px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 10;
+  padding-top: 100px;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.5);
 }
 
-/* New: Map Layer Selector Styling */
-#map-layer-selector {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 1000;
+.modal-content {
   background: white;
-  padding: 0.5rem 0.8rem;
+  margin: auto;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
   border-radius: 8px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  box-shadow: var(--shadow);
 }
 
-#map-layer-selector select {
-  padding: 0.3rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-}
-/* End Map Layer Selector Styling */
-
-
-.selector select {
-  padding: 0.4rem;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-
-#selected-info {
-  background: white;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-  transition: all 0.3s ease;
-}
-
-.charts {
-  background: white;
-  padding: 1rem;
-  border-radius: 10px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-}
-
-.charts canvas {
-  width: 100%;
-  max-height: 250px;
-  margin-bottom: 12px;
-  border: 1px solid #eee;
-  border-radius: 6px;
-}
-
-/* New: Download Button Styling */
-#downloadChartBtn {
-  background: #0073e6;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+.close {
+  float: right;
   cursor: pointer;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  transition: background-color 0.2s;
+  font-size: 20px;
 }
 
-#downloadChartBtn:hover {
-  background-color: #005bb5;
-}
-/* End Download Button Styling */
-
-
-footer {
-  background: #003580;
-  color: white;
-  text-align: center;
-  padding: 0.5rem;
-  font-size: 0.9rem;
-}
-
-a { color: white; }
-
-/* Responsive adjustments */
+/* Responsive for small devices */
 @media (max-width: 768px) {
   main {
     flex-direction: column;
   }
-  #map-section {
-    min-height: 50vh;
+  #menu {
+    width: 100%;
   }
-  #map-layer-selector {
-    flex-direction: row;
-    align-items: center;
-    gap: 1rem;
-    position: relative; /* Move it from absolute to relative on mobile */
-    top: auto;
-    left: auto;
-    margin-bottom: 1rem;
+  .chart-container {
+    min-width: 100%;
   }
 }
