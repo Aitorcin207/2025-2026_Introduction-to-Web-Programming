@@ -12,6 +12,7 @@
   <header>
     <h1>Money & Crypto Portal</h1>
     <p>Visualize and compare currencies, cryptos, and commodity-like assets in real time.</p>
+    <p>From Aitor Martin Lopez</p>
   </header>
 
   <main>
@@ -21,11 +22,8 @@
         <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
         <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
         <div draggable="true" data-type="crypto" data-id="dogecoin">Dogecoin (DOGE)</div>
-        <!-- FX iteSms: use slash "/" to keep consistent label format
-        <div draggable="true" data-type="fx" data-base="EUR" data-symbols="USD">EUR/USD</div>
-        <div draggable="true" data-type="fx" data-base="USD" data-symbols="EUR">USD/EUR</div>
-        -->
-        <!-- Replaced metal gold with a coin that represents gold (Tether Gold) -->
+        <div draggable="true" data-type="crypto" data-id="litecoin">Litecoin (LTC)</div>
+        <!-- Coin that represents Gold -->
         <div draggable="true" data-type="crypto" data-id="tether-gold">Tether Gold (XAUT)</div>
       </div>
 
@@ -55,7 +53,7 @@
 
       <hr>
 
-      <h3>My Purchases (Feature 9)</h3>
+      <h3>My Purchases</h3>
       <form id="buyForm">
         <label>Coin ID (e.g. bitcoin): <input id="buyCoin" placeholder="bitcoin"></label><br>
         <label>Date (YYYY-MM-DD): <input id="buyDate" type="date"></label><br>
@@ -91,7 +89,7 @@
       <option value="JPY">JPY (Yen)</option>
       <option value="GBP">GBP (Pound)</option>
       <option value="CHF">CHF (Swiss Franc)</option>
-      <!-- add as many you like -->
+
     </select>
 
     <button onclick="loadFXRange('30')">1M</button>
@@ -110,7 +108,8 @@
 
 
   <footer>
-    Data from CoinGecko, Exchangerate.host. Tether Gold (XAUT) is used as a gold-like asset via CoinGecko.
+    Data from Frankfurter API. Currency exchange for Bitcoin (BTC), Ethereum (ETH), Dogecoin (DOGE) and Litecoin (LTC) rates are based on USD. Historical data may vary from current rates.
+    <p>Data from CoinGecko, Exchangerate.host. Tether Gold (XAUT) is used as a gold-like asset via CoinGecko.</p>
   </footer>
 
   <script src="function.js"></script>

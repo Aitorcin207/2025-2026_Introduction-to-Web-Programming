@@ -123,7 +123,7 @@ canvas {
   font-size: 20px;
 }
 
-/* Responsive for small devices */
+/* Responsive for mobile phones */
 @media (max-width: 768px) {
   main {
     flex-direction: column;
