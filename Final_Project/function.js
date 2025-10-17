@@ -52,32 +52,32 @@ function Drag_objects() {
       // This is for storing the crypto that is being dragged
       el.dataset.dragPayload = JSON.stringify(load2);
       // This is to create an effect that is going to be used when the dragging
-      const ghost = el.cloneNode(true);
-      ghost.style.position = "fixed";
-      ghost.style.opacity = "0.7";
-      ghost.style.left = touch.pageX + "px";
-      ghost.style.top = touch.pageY + "px";
-      ghost.id = "ghost-drag";
-      document.body.appendChild(ghost);
+      const trail = el.cloneNode(true);
+      trail.style.position = "fixed";
+      trail.style.opacity = "0.7";
+      trail.style.left = touch.pageX + "px";
+      trail.style.top = touch.pageY + "px";
+      trail.id = "dragTrail";
+      document.body.appendChild(trail);
     });
     // To make it move the draggable objects
     el.addEventListener("touchmove", e => {
-      const ghost = document.getElementById("ghost-drag");
+      const trail = document.getElementById("dragTrail");
       // This is to make the effect of the dragging
-      if (ghost) {
-        const touch = e.touches[0];
-        ghost.style.left = touch.pageX + "px";
-        ghost.style.top = touch.pageY + "px";
+      if (trail) {
+        const touch2 = e.touches[0];
+        trail.style.left = touch2.pageX + "px";
+        trail.style.top = touch2.pageY + "px";
       }
     });
     // To be posible to drop the draggable objects
     el.addEventListener("touchend", e => {
-      const ghost = document.getElementById("ghost-drag");
+      const trail = document.getElementById("dragTrail");
       // For removing the effect of dragging
-      if (ghost) ghost.remove();
+      if (trail) trail.remove();
       // This is to get the element droppen on to the dropzone
-      const touch = e.changedTouches[0];
-      const dropzone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".dropzone");
+      const touch3 = e.changedtouch3es[0];
+      const dropzone = document.elementFromPoint(touch3.clientX, touch3.clientY)?.closest(".dropzone");
       // This is if the place we dropped the object is a valid dropzone we do this
       if (dropzone) {
         const load3 = JSON.parse(el.dataset.dragPayload);
@@ -94,8 +94,8 @@ function Drag_objects() {
 Drag_objects();
 
 // This are the time ranges used for the chart
-function time_range_for_charts(val) {
-  switch (val) {
+function time_range_for_charts(timeval) {
+  switch (timeval) {
     case "1": return 1;
     case "3": return 3;
     case "7": return 7;
@@ -104,7 +104,7 @@ function time_range_for_charts(val) {
     case "365": return 365;
     case "3650": return 3650;
     case "max": return "max";
-    default: return parseInt(val, 10) || 30;
+    default: return parseInt(timeval, 10) || 30;
   }
 }
 
@@ -250,17 +250,17 @@ async function add_new_cryto(coinId, color, times, chart) {
 // }
 
 // This function handles the modal used when clicking on data points of the charts
-const modal = document.getElementById("ExtraInfo");
+const modalUsed = document.getElementById("ExtraInfo");
 const moreinfo = document.getElementById("MoreInfo");
 const closeButton = document.querySelector(".CloseButton");
 // Show the modal with the info of the data point in html
 function show_more_info(html) {
   moreinfo.innerHTML = html;
-  modal.style.display = "block";
+  modalUsed.style.display = "block";
 }
 // Close modal events when the user clicks
-if (closeButton) closeButton.onclick = () => (modal.style.display = "none");
-window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
+if (closeButton) closeButton.onclick = () => (modalUsed.style.display = "none");
+window.onclick = (e) => { if (e.target === modalUsed) modalUsed.style.display = "none"; };
 
 // Function used for download button to work
 document.getElementById("DownloadPNG").addEventListener("click", () => {
@@ -289,15 +289,15 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
         files: [file]
       });
     } else {
-      const w = window.open();
-      w.document.write(`<img src="${dataUrl}" alt="chart"><p>Right-click -> Save image or upload to social media</p>`);
+      const wndw = window.open();
+      wndw.document.write(`<img src="${dataUrl}" alt="chart"><p>Right-click -> Save image or upload to social media</p>`);
     }
   // Error in the sharing process
   } catch (err) {
     console.error("Share failed", err);
     alert("There is a problem and you are not able to share to this place.");
-    const w = window.open();
-    w.document.write(`<img src="${activeGraph.toBase64Image()}" alt="chart">`);
+    const wndw2 = window.open();
+    wndw2.document.write(`<img src="${activeGraph.toBase64Image()}" alt="chart">`);
   }
 });
 
@@ -364,17 +364,17 @@ async function porfolio_for_purchases() {
     // This get the value of the coin at the current time inserted by the user(if it is valid)
     try {
       // Use the API to get the data
-      const histUrl = `https://api.coingecko.com/api/v3/coins/${p.coin}/history?date=${formatDateForCG(p.date)}`;
-      const histRes = await fetch(histUrl);
+      const historicUrl = `https://api.coingecko.com/api/v3/coins/${p.coin}/history?date=${formatDateForCG(p.date)}`;
+      const historicRes = await fetch(historicUrl);
       // Check if the values given by the user are considered to be valid
-      if (!histRes.ok) throw new Error(histRes.status);
-      const histData = await histRes.json();
-      const boughtPrice = histData.market_data && histData.market_data.current_price && histData.market_data.current_price.usd;
+      if (!historicRes.ok) throw new Error(historicRes.status);
+      const historicData = await historicRes.json();
+      const boughtPrice = historicData.market_data && historicData.market_data.current_price && historicData.market_data.current_price.usd;
       // Gets the value of the coin at the specific time date
-      const curUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${p.coin}&vs_currencies=usd`;
-      const curRes = await fetch(curUrl);
-      const curData = await curRes.json();
-      const currentPrice = curData[p.coin] && curData[p.coin].usd;
+      const currentUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${p.coin}&vs_currencies=usd`;
+      const currentRes = await fetch(currentUrl);
+      const currentData = await currentRes.json();
+      const currentPrice = currentData[p.coin] && currentData[p.coin].usd;
       // If the data is not complete the summary its not done
       if (boughtPrice == null || currentPrice == null) {
         summary.push(`${p.coin} — data missing`);
@@ -385,12 +385,13 @@ async function porfolio_for_purchases() {
       // The value of the coin now
       const currentValue = currentPrice * p.amount;
       StartCurrentValue += currentValue;
-      const pct = ((currentValue - invested) / invested) * 100;
+      // The value of the percentaje of gain or loss
+      const percentage = ((currentValue - invested) / invested) * 100;
       let recommendation = "Hold";
       // The recommendations that are given to the user depending on the percentage obtained
-      if (pct > 5) recommendation = "You should consider selling the coins (the profit is > 5%)";
-      else if (pct < -5) recommendation = "You should consider buying more coins (the crypto has drop > 5%)";
-      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${pct.toFixed(2)}%). Recommendation: ${recommendation}`);
+      if (percentage > 5) recommendation = "You should consider selling the coins (the profit is > 5%)";
+      else if (percentage < -5) recommendation = "You should consider buying more coins (the crypto has drop > 5%)";
+      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${percentage.toFixed(2)}%). Recommendation: ${recommendation}`);
     // Error in the fetching of the data that is going to be used for the portfolio item
     } catch (err) {
       console.error("The porfolio functionality has failed", err);
@@ -411,9 +412,9 @@ let exchangeTime = "365";
 // This function is used to initialize the second chart(the exchange currencies one)
 function Exchange_currencies_chart() {
   // First create the chart object in the canvas
-  const ctx = document.getElementById("ExchangeChart").getContext("2d");
+  const contex = document.getElementById("ExchangeChart").getContext("2d");
   // This is the chart configuration that will be in the web
-  chartExchange = new Chart(ctx, {
+  chartExchange = new Chart(contex, {
     type: "line",
     data: { labels: [], datasets: [] },
     options: {
