@@ -197,8 +197,8 @@ async function fetch_and_add_data(load4, color, times, chart) {
 async function add_new_cryto(coinId, color, times, chart) {
   try {
     const daysParam = (times === "max") ? "max" : Math.max(1, times);
-    const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${daysParam}`;
-    const res = await fetch(url);
+    const frankfurter = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${daysParam}`;
+    const res = await fetch(frankfurter);
     // Check for some errors in the web request
     if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
     const data = await res.json();
@@ -252,14 +252,14 @@ async function add_new_cryto(coinId, color, times, chart) {
 // This function handles the modal used when clicking on data points of the charts
 const modal = document.getElementById("ExtraInfo");
 const moreinfo = document.getElementById("MoreInfo");
-const closeBtn = document.querySelector(".CloseButton");
+const closeButton = document.querySelector(".CloseButton");
 // Show the modal with the info of the data point in html
 function show_more_info(html) {
   moreinfo.innerHTML = html;
   modal.style.display = "block";
 }
 // Close modal events when the user clicks
-if (closeBtn) closeBtn.onclick = () => (modal.style.display = "none");
+if (closeButton) closeButton.onclick = () => (modal.style.display = "none");
 window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 
 // Function used for download button to work
@@ -477,9 +477,9 @@ async function values_comparison_USD(daysnum, chart) {
     const s = start.toISOString().split("T")[0];
     const e = end.toISOString().split("T")[0];
     // This is the URL of the API used to ge the data of the exchange currencies
-    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${exchangeCurrent}`;
+    const frankfurter = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${exchangeCurrent}`;
     // sometimes it saturates
-    const res = await fetch(url);
+    const res = await fetch(frankfurter);
     // We check for errors in the fetch request
     if (!res.ok) throw new Error(`there's have been an error fetching Frankfurter: ${res.status}`);
     const data = await res.json();
