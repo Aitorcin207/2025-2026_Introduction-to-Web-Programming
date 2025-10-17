@@ -1,7 +1,10 @@
-:root {
-  --blue: #004aad;
-  --light-bg: #f5f8fc;
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Final project from Aitor Martin Lopez 003355176 */
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1em;
+  gap: 1em;
 }
 
 body {
@@ -14,16 +17,15 @@ body {
 
 header {
   background: var(--blue);
-  color: white;
+
   padding: 1em;
   text-align: center;
 }
 
-main {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 1em;
-  gap: 1em;
+:root {
+  --blue: #ad5100;
+
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 #menu {
@@ -119,6 +121,7 @@ canvas {
   cursor: pointer;
   font-size: 20px;
 }
+
 
 /* Responsive for mobile phones */
 @media (max-width: 768px) {
