@@ -199,11 +199,4 @@ canvas {
 
   }
 
-  /* Styles for the elements inside the menu(that in mobiles its not in the left but below) for mobile phones */
-  #MainMenu button, #MainMenu select, #MainMenu input {
-    margin-top: 0.5em;
-    width: 100%;
-
-  }
-
 }

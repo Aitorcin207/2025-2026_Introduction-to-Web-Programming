@@ -24,7 +24,7 @@ function Drop_zone(container) {
     try {
       payload = JSON.parse(e.dataTransfer.getData("text/plain") || "{}");
     } catch (err) {
-      console.warn("Invalid drag payload", err);
+      console.warn("There has been an error in the dragging.", err);
       return;
     }
     // The color selected by the user
@@ -185,13 +185,11 @@ async function fetch_and_add_data(payload, color, days, chart) {
 
     } else if (payload.type === "metal") {
 
-    } else {
-      console.warn("Unknown payload type", payload);
     }
 
   // Error in fetching data
   } catch (err) {
-    console.error("Fetch error:", err);
+    console.error("There has been an error in the fetching:", err);
   }
 }
 
@@ -206,7 +204,7 @@ async function add_new_cryto(coinId, color, days, chart) {
     const data = await res.json();
     // Check if data.prices exists and has the data we need
     if (!data.prices || !data.prices.length) {
-      console.warn("No price data for", coinId);
+      console.warn("There is not price data for:", coinId);
       return;
     }
     // This function allows to map the data to the format that we need for Chart.js
@@ -225,8 +223,10 @@ async function add_new_cryto(coinId, color, days, chart) {
       fill: false
     });
     chart.update();
-  } catch (err) {
-    console.error("add_new_cryto error:", err);
+  } 
+  // Error in adding new crypto to the chart
+  catch (err) {
+    console.error("There has been an error in add_new_cryto:", err);
   }
 }
 
@@ -284,8 +284,8 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
     // Use Web Share API if it is available
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
-        title: "My chart",
-        text: "Chart from Money & Crypto Portal",
+        title: "Money and Crypto Portal Chart",
+        text: "Chart from the web: Money and Crypto Portal",
         files: [file]
       });
     } else {
@@ -295,7 +295,7 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
   // Error in the sharing process
   } catch (err) {
     console.error("Share failed", err);
-    alert("Share not supported in this browser — opening image tab.");
+    alert("There is a problem and you are not able to share to this place.");
     const w = window.open();
     w.document.write(`<img src="${activeChart.toBase64Image()}" alt="chart">`);
   }
@@ -335,7 +335,14 @@ document.getElementById("BuyCrypto").addEventListener("submit", async (e) => {
   const amount = parseFloat(document.getElementById("TotalAmount").value);
   // Validate the inputs entered by the user
   if (!coin || !date || !amount || amount <= 0) {
-    alert("Please enter valid coin id, date and amount.");
+    if (amount <= 0)
+      alert("The amount you inserted must be positive(this is to buy not to sell).");
+    if(!coin)        
+      alert("You have to enter a valid crypto to buy(those are: bitcoin, dogecoin or ethereum).");
+    if(!date)
+      alert("You have to enter a valid past date to make the purchase.");
+    if(!amount || isNaN(amount))
+      alert("You have to enter a valid number to buy crypto.");
     return;
   }
   // Add the purchase done to the "portfolio"
@@ -381,13 +388,13 @@ async function porfolio_for_purchases() {
       const pct = ((currentValue - invested) / invested) * 100;
       let rec = "Hold";
       // The recommendations that are given to the user depending on the percentage obtained
-      if (pct > 5) rec = "Consider selling (profit > 5%)";
-      else if (pct < -5) rec = "Consider buying more (drop > 5%)";
-      summary.push(`${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current ${currentPrice.toFixed(2)} USD → value ${currentValue.toFixed(2)} USD (${pct.toFixed(2)}%). Recommendation: ${rec}`);
+      if (pct > 5) rec = "You should consider selling the coins (the profit is > 5%)";
+      else if (pct < -5) rec = "You should consider buying more coins (the crypto has drop > 5%)";
+      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${pct.toFixed(2)}%). Recommendation: ${rec}`);
     // Error in the fetching of the data that is going to be used for the portfolio item
     } catch (err) {
-      console.error("Portfolio item failed", err);
-      summary.push(`${p.coin} — failed to fetch data`);
+      console.error("The porfolio functionality has failed", err);
+      summary.push(`${p.coin} — failed to fetch the data from this purchase`);
     }
   }
   // Now we update the porfolio with the new data added and obtained
@@ -429,7 +436,7 @@ function Exchange_currencies_chart() {
       plugins: {
         title: {
           display: true,
-          text: () => `USD ↔ ${fxCurrentTarget} Exchange Rate Over Time`
+          text: () => `USD to ${fxCurrentTarget} exchange currency rates over the time`
         },
         // The legend fo the chart
         legend: { display: true }
@@ -474,7 +481,7 @@ async function values_comparison_USD(days, chart) {
     // sometimes it saturates
     const res = await fetch(url);
     // We check for errors in the fetch request
-    if (!res.ok) throw new Error(`Frankfurter fetch error: ${res.status}`);
+    if (!res.ok) throw new Error(`there's have been an error fetching Frankfurter: ${res.status}`);
     const data = await res.json();
     // Process the data to get the values with its dates
     const dates = Object.keys(data.rates).sort();
@@ -504,7 +511,7 @@ async function values_comparison_USD(days, chart) {
     chart.update();
   // Error when fetching the exchange of the currency data
   } catch (err) {
-    console.error("values_comparison_USD failed:", err);
+    console.error("The function values_comparison_USD has failed:", err);
   }
 }
 // This asyncronate function is to load the data of the exchange currencies
@@ -523,7 +530,7 @@ async function load_new_currencies(days) {
 function download_charts_CSV() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
   if (!fxChart || !fxChart.data.labels.length) {
-    alert("No FX data to download yet!");
+    alert("There is no exchange currency data to download at the moment.");
     return;
   }
   // This const will store the CSV data that is going to be downloaded from the chart
@@ -549,7 +556,7 @@ function download_charts_CSV() {
 function download_charts_PNG() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
   if (!fxChart) {
-    alert("FX chart not ready!");
+    alert("The exchange currency chart is not ready to be downloaded at this moment.");
     return;
   }
   // This is going to be the link of the download of the image
@@ -569,9 +576,11 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 // This function is used to format the date to the format used by CoinGecko API(dd-mm-yyyy)
 function formatDateForCG(dateStr) {
+  // Create a Date object from the input date string
   const d = new Date(dateStr);
   const dd = String(d.getUTCDate()).padStart(2, "0");
   const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
   const yyyy = d.getUTCFullYear();
+  // Return the date in dd-mm-yyyy format like the API
   return `${dd}-${mm}-${yyyy}`;
 }

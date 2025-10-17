@@ -78,7 +78,7 @@
         <!-- This is the input to add the amount of coins you buyed to the porfolio -->
         <label>Amount (only units): <input id="TotalAmount" type="number" step="any" min="0"></label><br>
         <!-- The button is used to add the purchase to the porfolio -->
-        <button type="submit">Add Purchase</button>
+        <button type="submit">Add a Purchase</button>
       </form>
       <!-- This is the area where the information about your purchases appear -->
       <div id="InformationBuy"></div>
@@ -108,10 +108,10 @@
 
 <!-- This is the section of the second chart that is for the currency exchange between USD and others -->
 <div class="section">
-  <h2>💶 Currency Exchange (USD ↔ Others):</h2>
+  <h2>Currency Exchange from USD to Other currencies:</h2>
   <!-- This are the controls for the new currency exchange chat -->
   <div class="controls">
-    <label for="CompareCurrency">Target currency:</label>
+    <label for="CompareCurrency">Currency to exchange:</label>
     <!-- To select the currency that we are going to compare to the USD -->
     <select id="CompareCurrency" onchange="change_comparison_USD()">
       <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
@@ -123,13 +123,13 @@
     </select>
 
     <!-- Buttons to select the time range of the exchange data currencies by default 1 year is selected -->
-    <button onclick="load_new_currencies('30')">1M</button>
-    <button onclick="load_new_currencies('180')">6M</button>
-    <button onclick="load_new_currencies('365')">1Y</button>
-    <button onclick="load_new_currencies('1825')">5Y</button>
+    <button onclick="load_new_currencies('30')">1 month</button>
+    <button onclick="load_new_currencies('180')">6 months</button>
+    <button onclick="load_new_currencies('365')">1 year</button>
+    <button onclick="load_new_currencies('1825')">5 years</button>
     <button onclick="load_new_currencies('max')">Max</button>
-    <button onclick="download_charts_CSV()">Download CSV</button>
-    <button onclick="download_charts_PNG()">Download PNG</button>
+    <button onclick="download_charts_CSV()">Download in CSV</button>
+    <button onclick="download_charts_PNG()">Download in PNG</button>
   </div>
   <!-- The container of the chart maximum size -->
   <div class="fx-container" style="max-width:100%; max-height:360px; overflow:auto;">
