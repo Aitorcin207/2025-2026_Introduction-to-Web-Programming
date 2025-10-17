@@ -567,3 +567,11 @@ window.addEventListener("DOMContentLoaded", () => {
   // maximum one year putted by default
   load_new_currencies("365");
 });
+// This function is used to format the date to the format used by CoinGecko API(dd-mm-yyyy)
+function formatDateForCG(dateStr) {
+  const d = new Date(dateStr);
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const yyyy = d.getUTCFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
