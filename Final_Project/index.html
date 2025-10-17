@@ -6,31 +6,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Money & Crypto Portal</title>
+  <!-- The CSS of the page -->
   <link rel="stylesheet" href="style.css" />
+  <!-- The favicon added to the page -->
   <link rel="icon" type="image/x-icon" href="finland_countryball.ico">
+  <!-- Chart.js library from the CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+  <!-- A header with the title and description for the project -->
   <header>
-    <h1>Money & Crypto Portal</h1>
+    <!-- What the project is -->
+    <h1>Money and Crypto Portal</h1>
+    <!-- A little exaplanation of the project -->
     <p>Visualize and compare currencies, cryptos, and commodity-like assets in real time.</p>
+    <!-- THe autor of the project -->  
     <p>From Aitor Martin Lopez</p>
   </header>
 
   <main>
+    <!-- This is the menu of what you can do in the page(is at the left) -->
     <aside id="menu">
-      <h2>Data Sources</h2>
+      <!-- Title -->
+      <h2>Sources of Cryptos:</h2>
       <div id="draggables">
+        <!-- Crypto option that can be puted in the chart area -->
         <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
         <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
         <div draggable="true" data-type="crypto" data-id="dogecoin">Dogecoin (DOGE)</div>
         <div draggable="true" data-type="crypto" data-id="litecoin">Litecoin (LTC)</div>
-        <!-- Coin that represents Gold -->
+        <!-- Crypto that represents Gold -->
         <div draggable="true" data-type="crypto" data-id="tether-gold">Tether Gold (XAUT)</div>
       </div>
-
-      <h3>Options</h3>
-      <label>Time Range:
+      <!-- This are the options you can change of the chart -->
+      <h3>Options:</h3>
+      <!-- The time range you can chose between -->
+      <label>Time Ranges:
         <select id="timeRange">
           <option value="3">3 days</option>
           <option value="7">7 days</option>
@@ -42,50 +53,67 @@
           <!-- <option value="730">2 years</option> -->
         </select>
       </label>
-
-      <label>Color:
+      <!-- Color to choose of for the chart line(its a chromatic table) -->
+      <label>Color for the Crypto:
         <input type="color" id="colorPicker" value="#ff6384">
       </label>
-
+      <!-- Buttons of functionalities -->
       <div style="margin-top:10px;">
+        <!-- Button to add a new chart -->
         <button id="addChart">Add New Chart</button>
+        <!-- Button to download the active chart -->
         <button id="download">Download Active Chart</button>
+        <!-- Button to share the active chart -->
         <button id="share">Share Active Chart</button>
       </div>
 
       <hr>
-
-      <h3>My Purchases</h3>
+      <!-- Functionality to add purchases and see the "portfolio" summary -->
+      <h3>My Purchases:</h3>
       <form id="buyForm">
-        <label>Coin ID (e.g. bitcoin): <input id="buyCoin" placeholder="bitcoin"></label><br>
-        <label>Date (YYYY-MM-DD): <input id="buyDate" type="date"></label><br>
-        <label>Amount (units): <input id="buyAmount" type="number" step="any" min="0"></label><br>
+        <!-- This is the input to add the new crypto to the porfolio -->
+        <label>Coin ID (example bitcoin): <input id="buyCoin" placeholder="bitcoin"></label><br>
+        <!-- This is the input to add the date you buy that coin to the porfolio -->
+        <label>Date (DD/MM/YYYY): <input id="buyDate" type="date"></label><br>
+        <!-- This is the input to add the amount of coins you buyed to the porfolio -->
+        <label>Amount (only units): <input id="buyAmount" type="number" step="any" min="0"></label><br>
+        <!-- The button is used to add the purchase to the porfolio -->
         <button type="submit">Add Purchase</button>
       </form>
       <div id="portfolioSummary"></div>
 
     </aside>
 
+    <!-- This is the area where the first chart is displayed(the crypto one) -->
     <section id="chart-area">
+      <!-- This is the chart container where the firstchart is displayed and where the cryptos are dropped -->
       <div class="chart-container dropzone active">
         <canvas></canvas>
       </div>
     </section>
   </main>
 
+  <!-- When clicked a point on the chart this div is a Modal that shows more information about that specific point -->
   <div id="infoModal" class="modal">
+    <!-- The contente of the Modal -->
     <div class="modal-content">
+      <!-- The close button of the modal -->
       <span class="close">&times;</span>
-      <h3>Data Point Information</h3>
+      <!-- The title of the modal -->
+      <h3>Point Information:</h3>
       <p id="modalBody"></p>
     </div>
   </div>
 
+<!-- This is the section of the second chart that is for the currency exchange between USD and others -->
 <div class="section">
-  <h2>💶 Currency Exchange (USD ↔ Others)</h2>
+  <h2>💶 Currency Exchange (USD ↔ Others):</h2>
+  <!-- This are the controls for the new currency exchange chat -->
   <div class="controls">
     <label for="fxTargetSelect">Target currency:</label>
+    <!-- To select the currency that we are going to compare to the USD -->
     <select id="fxTargetSelect" onchange="onFXTargetChange()">
+      <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
       <option value="EUR" selected>EUR</option>
       <option value="JPY">JPY (Yen)</option>
       <option value="GBP">GBP (Pound)</option>
@@ -93,6 +121,7 @@
 
     </select>
 
+    <!-- Buttons to select the time range of the exchange data currencies by default 1 year is selected -->
     <button onclick="loadFXRange('30')">1M</button>
     <button onclick="loadFXRange('180')">6M</button>
     <button onclick="loadFXRange('365')">1Y</button>
@@ -101,18 +130,21 @@
     <button onclick="downloadFXCSV()">Download CSV</button>
     <button onclick="downloadFXPNG()">Download PNG</button>
   </div>
+  <!-- The container of the chart maximum size -->
   <div class="fx-container" style="max-width:100%; max-height:360px; overflow:auto;">
+    <!-- Height and Width of the container -->
     <canvas id="fxChart" height="120" style="display:block; width:100%; max-width:100%; height:300px;"></canvas>
   </div>
 </div>
 
 
-
+  <!-- A little footer at the end with the data/APIs used in the project -->
   <footer>
     Data from Frankfurter API. Currency exchange for Bitcoin (BTC), Ethereum (ETH), Dogecoin (DOGE) and Litecoin (LTC) rates are based on USD. Historical data may vary from current rates.
     <p>Data from CoinGecko, Exchangerate.host. Tether Gold (XAUT) is used as a gold-like asset via CoinGecko.</p>
   </footer>
 
+  <!-- The functionality used to make the page works -->
   <script src="function.js"></script>
 </body>
 </html>

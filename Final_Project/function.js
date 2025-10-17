@@ -14,17 +14,20 @@ function setupDropzone(container) {
     e.preventDefault();
     container.classList.add("dragover");
   });
+  // To make the drag effect disappear when it is leaved outside of the designated dropzone
   container.addEventListener("dragleave", () => container.classList.remove("dragover"));
   container.addEventListener("drop", async e => {
     e.preventDefault();
     container.classList.remove("dragover");
     let payload = {};
+    // To being able to parse the data obtained from the drag event
     try {
       payload = JSON.parse(e.dataTransfer.getData("text/plain") || "{}");
     } catch (err) {
       console.warn("Invalid drag payload", err);
       return;
     }
+    // The color selected by the user
     const color = document.getElementById("colorPicker").value;
     const days = getDaysFromRange(document.getElementById("timeRange").value);
     await fetchDataAndAdd(payload, color, days, container.chart);
@@ -48,6 +51,7 @@ function enableTouchDrag() {
       };
       // This is for storing the crypto that is being dragged
       el.dataset.dragPayload = JSON.stringify(payload);
+      // This is to create an effect that is going to be used when the dragging
       const ghost = el.cloneNode(true);
       ghost.style.position = "fixed";
       ghost.style.opacity = "0.7";
@@ -59,6 +63,7 @@ function enableTouchDrag() {
     // To make it move the draggable objects
     el.addEventListener("touchmove", e => {
       const ghost = document.getElementById("ghost-drag");
+      // This is to make the effect of the dragging
       if (ghost) {
         const touch = e.touches[0];
         ghost.style.left = touch.pageX + "px";
@@ -68,14 +73,17 @@ function enableTouchDrag() {
     // To be posible to drop the draggable objects
     el.addEventListener("touchend", e => {
       const ghost = document.getElementById("ghost-drag");
+      // For removing the effect of dragging
       if (ghost) ghost.remove();
-
+      // This is to get the element droppen on to the dropzone
       const touch = e.changedTouches[0];
       const dropzone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".dropzone");
+      // This is if the place we dropped the object is a valid dropzone we do this
       if (dropzone) {
         const payload = JSON.parse(el.dataset.dragPayload);
         const color = document.getElementById("colorPicker").value;
         const days = getDaysFromRange(document.getElementById("timeRange").value);
+        // This is the function to fetch the data and add it to this first chart
         fetchDataAndAdd(payload, color, days, dropzone.chart);
       }
     });
@@ -388,149 +396,16 @@ async function updatePortfolioSummary() {
 
 // This is the chart of the currencies exchanges(not the crypto ones)
 let fxChart;
-
-// This initializes the exchange currencies chart(second one)
-function initFXChart() {
-  // Get the place in the canvas where the chart is going to be(I put it in the down part of the page)
-  const ctx = document.getElementById("fxChart").getContext("2d");
-  // Create the chart object
-  fxChart = new Chart(ctx, {
-    type: "line",
-    data: { labels: [], datasets: [] },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      // To being able to interact with the points of the chart
-      interaction: { mode: "nearest", intersect: false },
-      onClick: (e, elements) => {
-        // This shows the modal like in the other chart when we click on a data point
-        if (elements.length) {
-          const el = elements[0];
-          const dataset = fxChart.data.datasets[el.datasetIndex];
-          const date = fxChart.data.labels[el.index];
-          const value = dataset.data[el.index];
-          // use the function showModal of befor to shw the info
-          showModal(`${dataset.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(4)}`);
-        }
-      },
-      // The plugins that are being used in the chart
-      plugins: {
-        title: { display: true, text: "USD ↔ EUR Exchange Rate Over Time" },
-        legend: { display: true }
-      },
-
-    }
-  });
-}
-
-// This asyncronate function(to make it work propertly) fetches the data from 
-// Frankfurter API to get the exchange values between the currencies
-async function fetchUSD_EUR_Frankfurter(days, chart) {
-  // This clears the previous data in the chart
-  try {
-    const end = new Date();
-    const start = new Date();
-    // Depending on the range of time selected by the user is the day that the fetch data of the chart starts
-    // for max it goes up to 10 years back from the current date(the API I used could not get up to 20 years)
-    if (days === "max") start.setFullYear(end.getFullYear() - 10);
-    // If max it is not selected then it just substracts the number of days selected from the current date
-    else start.setDate(end.getDate() - Number(days));
-
-    // This formats the dates to the one of the API used
-    const s = start.toISOString().split("T")[0];
-    const e = end.toISOString().split("T")[0];
-
-    // To fetch the data from the frankfurter API
-    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=EUR`;
-    const res = await fetch(url);
-    // Checks for errors in the request of the web(of the user)
-    if (!res.ok) throw new Error(`Frankfurter ${res.status}`);
-    const data = await res.json();
-
-    const labels = Object.keys(data.rates).sort();
-    const usdToEur = labels.map(d => data.rates[d]?.EUR ?? null);
-    const eurToUsd = usdToEur.map(v => (v ? 1 / v : null));
-
-    chart.data.labels = labels;
-    chart.data.datasets = [
-      {
-        label: "USD/EUR",
-        data: usdToEur,
-        borderColor: "#ff6600",
-        fill: false
-      },
-      {
-        label: "EUR/USD",
-        data: eurToUsd,
-        borderColor: "#00ccff",
-        fill: false
-      }
-    ];
-    chart.update();
-  } catch (err) {
-    console.error("Frankfurter fetch failed:", err);
-  }
-}
-
-async function loadFXRange(days) {
-  fxChart.data.labels = [];
-  fxChart.data.datasets = [];
-  fxChart.update();
-  await fetchUSD_EUR_Frankfurter(days, fxChart);
-}
-
-function downloadFXCSV() {
-  if (!fxChart || !fxChart.data.labels.length) {
-    alert("No data to download yet!");
-    return;
-  }
-  const labels = fxChart.data.labels;
-  const datasets = fxChart.data.datasets;
-  let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
-
-  for (let i = 0; i < labels.length; i++) {
-    const row = [labels[i], ...datasets.map(d => d.data[i] ?? "")];
-    csv += row.join(",") + "\n";
-  }
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "usd_eur_exchange.csv";
-  a.click();
-}
-
-function downloadFXPNG() {
-  if (!fxChart) {
-    alert("FX chart not ready yet!");
-    return;
-  }
-  const link = document.createElement("a");
-  link.href = fxChart.toBase64Image();
-  link.download = "usd_eur_exchange.png";
-  link.click();
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  initFXChart();
-  loadFXRange("365");
-});
-
-
-
-function formatDateForCG(dateStr) {
-  const d = new Date(dateStr);
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const yyyy = d.getUTCFullYear();
-  return `${dd}-${mm}-${yyyy}`;
-}
-
+// The current target currency that is being used at starting the web
 let fxCurrentTarget = "EUR";
+// The current amount of time used at the starting of the web
 let fxCurrentDays = "365";
 
+// This function is used to initialize the second chart(the exchange currencies one)
 function initFXChart() {
+  // First create the chart object in the canvas
   const ctx = document.getElementById("fxChart").getContext("2d");
+  // This is the chart configuration that will be in the web
   fxChart = new Chart(ctx, {
     type: "line",
     data: { labels: [], datasets: [] },
@@ -538,22 +413,28 @@ function initFXChart() {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: "nearest", intersect: false },
+      // To allow the interaction of the data points like in the crypto chart
       onClick: (e, elements) => {
+        // To check if the user clicks the data points
         if (elements.length) {
           const el = elements[0];
           const ds = fxChart.data.datasets[el.datasetIndex];
           const date = fxChart.data.labels[el.index];
           const value = ds.data[el.index];
+          // To use the modal function of before to show the info of the data points clicked
           showModal(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
         }
       },
+      // the plugins used in this chart
       plugins: {
         title: {
           display: true,
           text: () => `USD ↔ ${fxCurrentTarget} Exchange Rate Over Time`
         },
+        // The legend fo the chart
         legend: { display: true }
       },
+      // the scale depending on the time range that being selected
       scales: {
         x: { title: { display: true, text: "Date" } },
         y: { title: { display: true, text: "Rate" } }
@@ -561,82 +442,105 @@ function initFXChart() {
     }
   });
 }
-
+// This is the function that allows to change the currency that is being compared 
+// with the USD(The API used the dollar as base currency so I have to use that)
 function onFXTargetChange() {
+  // to get the currency selecte by the user
   const sel = document.getElementById("fxTargetSelect");
   fxCurrentTarget = sel.value;
+  // Function to load the data of the new used currency
   loadFXRange(fxCurrentDays);
 }
-
+// This function uses the API of Frankfurter to fetch the values of the exchange currencies
 async function fetchUSDToTarget(days, chart) {
+  // First we clear the data of the last time range used
   try {
     const end = new Date();
     const start = new Date();
+    // To set the start date depending on the time range selected by the user
+    // If max is selected the chart will show from 10 years befor the day used
+    // (the API used ddoes not allow me to make the range up to 20 years)
     if (days === "max") {
       start.setFullYear(end.getFullYear() - 10);
+    // if selected any other time range that max we use that amount of time
     } else {
       start.setDate(end.getDate() - Number(days));
     }
-
+    // We change the format of tha date used to coincide with the ones used by the API
     const s = start.toISOString().split("T")[0];
     const e = end.toISOString().split("T")[0];
-
+    // This is the URL of the API used to ge the data of the exchange currencies
     const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${fxCurrentTarget}`;
+    // sometimes it saturates
     const res = await fetch(url);
+    // We check for errors in the fetch request
     if (!res.ok) throw new Error(`Frankfurter fetch error: ${res.status}`);
     const data = await res.json();
-
+    // Process the data to get the values with its dates
     const dates = Object.keys(data.rates).sort();
     const values = dates.map(d => {
       const rec = data.rates[d];
+      // We return the value of the target currency obtained from the fetched data
       return rec ? rec[fxCurrentTarget] : null;
     });
-
+    // We update the chart with the new data that we obtained
     chart.data.labels = dates;
     chart.data.datasets = [
       {
+        // the USD currency used as base against the target currency selected
         label: `USD/${fxCurrentTarget}`,
         data: values,
-        borderColor: "#ff6600",
+        borderColor: "#00ff99ff",
         fill: false
       },
       {
+        // The target currency selected by the user against the USD
         label: `${fxCurrentTarget}/USD`,
         data: values.map(v => (v != null ? 1 / v : null)),
-        borderColor: "#00ccff",
+        borderColor: "#0095ffff",
         fill: false
       }
     ];
     chart.update();
-
+  // Error when fetching the exchange of the currency data
   } catch (err) {
     console.error("fetchUSDToTarget failed:", err);
   }
 }
-
+// This asyncronate function is to load the data of the exchange currencies
+// depending on the time range that has been selected by the user
 async function loadFXRange(days) {
   fxCurrentDays = days;
+  // To initialize the chart if needed
   if (!fxChart) initFXChart();
   fxChart.data.labels = [];
   fxChart.data.datasets = [];
+  // To update the chart with the new data
   fxChart.update();
   await fetchUSDToTarget(days, fxChart);
 }
-
+// This function is used to being able to download the data as a CSV file is the user wants
 function downloadFXCSV() {
+  // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
   if (!fxChart || !fxChart.data.labels.length) {
     alert("No FX data to download yet!");
     return;
   }
+  // This const will store the CSV data that is going to be downloaded from the chart
   const labels = fxChart.data.labels;
   const datasets = fxChart.data.datasets;
+  // Creates the CSV string with the data obtained from the chart
   let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  // For each one of the dates we make a new row with the data
   for (let i = 0; i < labels.length; i++) {
     const row = [labels[i], ...datasets.map(d => (d.data[i] != null ? d.data[i] : ""))];
     csv += row.join(",") + "\n";
   }
+  // This is to create the CSV file and download it
   const blob = new Blob([csv], { type: "text/csv" });
+  // And the name of the file
   const a = document.createElement("a");
+  // This is the link used for the download
   a.href = URL.createObjectURL(blob);
   a.download = `USD_${fxCurrentTarget}_exchange.csv`;
   a.click();

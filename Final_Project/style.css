@@ -1,12 +1,5 @@
 /* Final project from Aitor Martin Lopez 003355176 */
 
-main {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 1em;
-  gap: 1em;
-}
-
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -15,11 +8,23 @@ body {
   overflow-x: hidden;
 }
 
+main {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 1em;
+  gap: 1em;
+}
+
 header {
   background: var(--blue);
 
   padding: 1em;
   text-align: center;
+}
+
+canvas {
+  width: 100%;
+  height: 350px;
 }
 
 :root {
@@ -47,19 +52,6 @@ header {
 #menu::-webkit-scrollbar-thumb {
   background-color: #bbb;
   border-radius: 3px;
-}
-
-#draggables div {
-  background: #e8efff;
-  padding: 0.6em;
-  border-radius: 6px;
-  margin-bottom: 0.5em;
-  cursor: grab;
-  user-select: none;
-  transition: transform 0.1s;
-}
-#draggables div:active {
-  transform: scale(0.97);
 }
 
 #chart-area {
@@ -91,9 +83,17 @@ header {
   background: #eef5ff;
 }
 
-canvas {
-  width: 100%;
-  height: 350px;
+#draggables div {
+  background: #e8efff;
+  padding: 0.6em;
+  border-radius: 6px;
+  margin-bottom: 0.5em;
+  cursor: grab;
+  user-select: none;
+  transition: transform 0.1s;
+}
+#draggables div:active {
+  transform: scale(0.97);
 }
 
 .modal {
@@ -129,6 +129,14 @@ canvas {
     flex-direction: column;
     padding: 0.5em;
   }
+  
+  canvas {
+    height: 250px;
+  }
+
+  header h1 {
+    font-size: 1.4em;
+  }
 
   #menu {
     width: 100%;
@@ -146,14 +154,6 @@ canvas {
     min-width: 100%;
     max-width: 100%;
     height: auto;
-  }
-
-  canvas {
-    height: 250px;
-  }
-
-  header h1 {
-    font-size: 1.4em;
   }
 
   #menu button, #menu select, #menu input {
