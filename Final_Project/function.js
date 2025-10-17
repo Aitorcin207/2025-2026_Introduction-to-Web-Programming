@@ -535,13 +535,13 @@ function download_charts_CSV() {
     return;
   }
   // This const will store the CSV data that is going to be downloaded from the chart
-  const labels = chartExchange.data.labels;
-  const datasets = chartExchange.data.datasets;
+  const labelsEX = chartExchange.data.labels;
+  const datasetsEX = chartExchange.data.datasets;
   // Creates the CSV string with the data obtained from the chart
-  let csvWork = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  let csvWork = "Date," + datasetsEX.map(d => d.label).join(",") + "\n";
   // For each one of the dates we make a new row with the data
-  for (let i = 0; i < labels.length; i++) {
-    const row = [labels[i], ...datasets.map(d => (d.data[i] != null ? d.data[i] : ""))];
+  for (let i = 0; i < labelsEX.length; i++) {
+    const row = [labelsEX[i], ...datasetsEX.map(d => (d.data[i] != null ? d.data[i] : ""))];
     csvWork += row.join(",") + "\n";
   }
   // This is to create the CSV file and download it
