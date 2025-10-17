@@ -6,7 +6,7 @@ let activeChart = null;
 const purchases = [];
 
 // This initiate the first chart on page load
-initialitate_the_chart(document.querySelector(".chart-container canvas"));
+initialitate_the_chart(document.querySelector(".ChartContainer canvas"));
 
 //This is the drag and drop setup used for charts
 function Drop_zone(container) {
@@ -127,7 +127,7 @@ document.getElementById("AddChart").addEventListener("click", () => {
   // Create a new container for the chart
   const section = document.getElementById("CryptoChart");
   const container = document.createElement("div");
-  container.className = "chart-container dropzone";
+  container.className = "ChartContainer dropzone";
   // Create the canvas for the new chart
   const canvas = document.createElement("canvas");
   container.appendChild(canvas);
@@ -252,7 +252,7 @@ async function add_new_cryto(coinId, color, days, chart) {
 // This function handles the modal used when clicking on data points of the charts
 const modal = document.getElementById("ExtraInfo");
 const moreinfo = document.getElementById("MoreInfo");
-const closeBtn = document.querySelector(".close");
+const closeBtn = document.querySelector(".CloseButton");
 // Show the modal with the info of the data point in html
 function show_more_info(html) {
   moreinfo.innerHTML = html;

@@ -76,7 +76,7 @@ canvas {
 }
 
 /* Style used for the containers that can be found on the charts */
-.chart-container {
+.ChartContainer {
   overflow: hidden;
   background: white;
   max-width: 600px;
@@ -122,7 +122,7 @@ canvas {
 }
 
 /* Style for the window that appears when you click on a point of the chart */
-.modal {
+.InformationWindow {
   background-color: rgba(0,0,0,0.5);
   padding-top: 100px;
   display: none;
@@ -134,7 +134,7 @@ canvas {
 }
 
 /* Style used for the content that appears of the window */
-.modal-content {
+.WindowContent {
   box-shadow: var(--shadow);
   border-radius: 10px;
   background: white;
@@ -146,7 +146,7 @@ canvas {
 }
 
 /* Style for the way you close the window(is an x on the right corner) */
-.close {
+.CloseButton {
   font-size: 40px;
   float: right;
   cursor: pointer;
@@ -191,7 +191,7 @@ canvas {
   }
   
   /* Chart container styles used for mobile phones */
-  .chart-container {
+  .ChartContainer {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
