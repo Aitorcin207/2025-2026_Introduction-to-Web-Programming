@@ -278,8 +278,8 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
   if (!activeGraph) return;
   try {
     const dataUrl = activeGraph.toBase64Image();
-    const res = await fetch(dataUrl);
-    const filecrypto = await res.blob();
+    const response = await fetch(dataUrl);
+    const filecrypto = await response.blob();
     const file = new File([filecrypto], "chart.png", { type: filecrypto.type });
     // Use Web Share API if it is available
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -310,16 +310,16 @@ document.getElementById("TimeRange").addEventListener("change", async () => {
     chart.data.datasets = [];
     chart.data.labels = [];
     // We need to re-fetch the data for each of the datasets used in the chart
-    for (const ds of datasets) {
+    for (const dtsts of datasets) {
       const label = ds.label || "";
       // Determine if it is a crypto or other type of data
       if (label.includes("(USD)") && !label.includes("/")) {
         const coinId = label.split(" ")[0];
-        await add_new_cryto(coinId, ds.borderColor || "#000", newDays, chart);
+        await add_new_cryto(coinId, dtsts.borderColor || "#000", newDays, chart);
       // Other types of data
       } else {
         const coinId = label.split(" ")[0];
-        await add_new_cryto(coinId, ds.borderColor || "#000", newDays, chart);
+        await add_new_cryto(coinId, dtsts.borderColor || "#000", newDays, chart);
       }
     }
   }
@@ -356,34 +356,34 @@ async function porfolio_for_purchases() {
   // Summary of the portfolio displayed for the user
   const container = document.getElementById("InformationBuy");
   container.innerHTML = "<em>Calculating...</em>";
-  const summary = [];
+  const summaryData = [];
   // The initial total value of the portfolio
   let StartCurrentValue = 0;
   // For each of the purchases made we need to fetch the data we get to calcule the benefit/loses from CoinGecko API
-  for (const p of porfoliobuys) {
+  for (const prchsd of porfoliobuys) {
     // This get the value of the coin at the current time inserted by the user(if it is valid)
     try {
       // Use the API to get the data
-      const historicUrl = `https://api.coingecko.com/api/v3/coins/${p.coin}/history?date=${formatDateForCG(p.date)}`;
+      const historicUrl = `https://api.coingecko.com/api/v3/coins/${prchsd.coin}/history?date=${formatDateForCG(prchsd.date)}`;
       const historicRes = await fetch(historicUrl);
       // Check if the values given by the user are considered to be valid
       if (!historicRes.ok) throw new Error(historicRes.status);
       const historicData = await historicRes.json();
       const boughtPrice = historicData.market_data && historicData.market_data.current_price && historicData.market_data.current_price.usd;
       // Gets the value of the coin at the specific time date
-      const currentUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${p.coin}&vs_currencies=usd`;
+      const currentUrl = `https://api.coingecko.com/api/v3/simple/price?ids=${prchsd.coin}&vs_currencies=usd`;
       const currentRes = await fetch(currentUrl);
       const currentData = await currentRes.json();
-      const currentPrice = currentData[p.coin] && currentData[p.coin].usd;
+      const currentPrice = currentData[prchsd.coin] && currentData[prchsd.coin].usd;
       // If the data is not complete the summary its not done
       if (boughtPrice == null || currentPrice == null) {
-        summary.push(`${p.coin} — data missing`);
+        summaryData.push(`${prchsd.coin} — data missing`);
         continue;
       }
       // Calculate with the amout invested the value and the percentage of benefit/losses
-      const invested = boughtPrice * p.amount;
+      const invested = boughtPrice * prchsd.amount;
       // The value of the coin now
-      const currentValue = currentPrice * p.amount;
+      const currentValue = currentPrice * prchsd.amount;
       StartCurrentValue += currentValue;
       // The value of the percentaje of gain or loss
       const percentage = ((currentValue - invested) / invested) * 100;
@@ -391,15 +391,15 @@ async function porfolio_for_purchases() {
       // The recommendations that are given to the user depending on the percentage obtained
       if (percentage > 5) recommendation = "You should consider selling the coins (the profit is > 5%)";
       else if (percentage < -5) recommendation = "You should consider buying more coins (the crypto has drop > 5%)";
-      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${percentage.toFixed(2)}%). Recommendation: ${recommendation}`);
+      summaryData.push(`amount of ${prchsd.coin} bought ${prchsd.amount} @ ${boughtPrice.toFixed(2)} USD on ${prchsd.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${percentage.toFixed(2)}%). Recommendation: ${recommendation}`);
     // Error in the fetching of the data that is going to be used for the portfolio item
     } catch (err) {
       console.error("The porfolio functionality has failed", err);
-      summary.push(`${p.coin} — failed to fetch the data from this purchase`);
+      summaryData.push(`${prchsd.coin} — failed to fetch the data from this purchase`);
     }
   }
   // Now we update the porfolio with the new data added and obtained
-  container.innerHTML = `<strong>Portfolio</strong><br>${summary.join("<br>")}<br><strong>Total current value:</strong> ${StartCurrentValue.toFixed(2)} USD`;
+  container.innerHTML = `<strong>Portfolio</strong><br>${summaryData.join("<br>")}<br><strong>Total current value:</strong> ${StartCurrentValue.toFixed(2)} USD`;
 }
 
 // This is the chart of the currencies exchanges(not the crypto ones)
