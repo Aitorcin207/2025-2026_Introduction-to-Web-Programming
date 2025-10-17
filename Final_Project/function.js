@@ -36,9 +36,9 @@ function Drop_zone(container) {
 
 // this function allows to drag objects by activatiing it tactility
 function Drag_objects() {
-  const cryptosList = document.querySelectorAll("#cryptosList div");
+  const CryptosList = document.querySelectorAll("#CryptosList div");
   // To make each draggable object
-  cryptosList.forEach(el => {
+  CryptosList.forEach(el => {
     // For the start of the draging
     el.addEventListener("touchstart", e => {
       const touch = e.touches[0];
@@ -109,7 +109,7 @@ function time_range_for_charts(val) {
 }
 
 // This is the function about the drag & drop data transfer
-document.querySelectorAll("#cryptosList div").forEach(el => {
+document.querySelectorAll("#CryptosList div").forEach(el => {
   el.addEventListener("dragstart", e => {
     const payload = {
       type: el.dataset.type,
@@ -250,8 +250,8 @@ async function add_new_cryto(coinId, color, days, chart) {
 // }
 
 // This function handles the modal used when clicking on data points of the charts
-const modal = document.getElementById("infoModal");
-const moreinfo = document.getElementById("moreinfo");
+const modal = document.getElementById("ExtraInfo");
+const moreinfo = document.getElementById("MoreInfo");
 const closeBtn = document.querySelector(".close");
 // Show the modal with the info of the data point in html
 function show_more_info(html) {
@@ -404,7 +404,7 @@ let fxCurrentDays = "365";
 // This function is used to initialize the second chart(the exchange currencies one)
 function Exchange_currencies_chart() {
   // First create the chart object in the canvas
-  const ctx = document.getElementById("fxChart").getContext("2d");
+  const ctx = document.getElementById("ExchangeChart").getContext("2d");
   // This is the chart configuration that will be in the web
   fxChart = new Chart(ctx, {
     type: "line",
@@ -446,7 +446,7 @@ function Exchange_currencies_chart() {
 // with the USD(The API used the dollar as base currency so I have to use that)
 function change_comparison_USD() {
   // to get the currency selecte by the user
-  const sel = document.getElementById("fxTargetSelect");
+  const sel = document.getElementById("CompareCurrency");
   fxCurrentTarget = sel.value;
   // Function to load the data of the new used currency
   load_new_currencies(fxCurrentDays);

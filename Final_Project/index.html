@@ -26,10 +26,10 @@
 
   <main>
     <!-- This is the menu of what you can do in the page(is at the left) -->
-    <aside id="mainmenu">
+    <aside id="MainMenu">
       <!-- Title -->
       <h2>Sources of Cryptos:</h2>
-      <div id="cryptosList">
+      <div id="CryptosList">
         <!-- Crypto option that can be puted in the chart area -->
         <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
         <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
@@ -95,14 +95,14 @@
   </main>
 
   <!-- When clicked a point on the chart this div is a Modal that shows more information about that specific point -->
-  <div id="infoModal" class="modal">
+  <div id="ExtraInfo" class="modal">
     <!-- The contente of the Modal -->
     <div class="modal-content">
       <!-- The close button of the modal -->
       <span class="close">&times;</span>
       <!-- The title of the modal -->
       <h3>Point Information:</h3>
-      <p id="moreinfo"></p>
+      <p id="MoreInfo"></p>
     </div>
   </div>
 
@@ -111,11 +111,11 @@
   <h2>💶 Currency Exchange (USD ↔ Others):</h2>
   <!-- This are the controls for the new currency exchange chat -->
   <div class="controls">
-    <label for="fxTargetSelect">Target currency:</label>
+    <label for="CompareCurrency">Target currency:</label>
     <!-- To select the currency that we are going to compare to the USD -->
-    <select id="fxTargetSelect" onchange="change_comparison_USD()">
+    <select id="CompareCurrency" onchange="change_comparison_USD()">
       <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
-      <option value="EUR" selected>EUR</option>
+      <option value="EUR" selected>EUR (Euro)</option>
       <option value="JPY">JPY (Yen)</option>
       <option value="GBP">GBP (Pound)</option>
       <option value="CHF">CHF (Swiss Franc)</option>
@@ -134,7 +134,7 @@
   <!-- The container of the chart maximum size -->
   <div class="fx-container" style="max-width:100%; max-height:360px; overflow:auto;">
     <!-- Height and Width of the container -->
-    <canvas id="fxChart" height="120" style="display:block; width:100%; max-width:100%; height:300px;"></canvas>
+    <canvas id="ExchangeChart" height="120" style="display:block; width:100%; max-width:100%; height:300px;"></canvas>
   </div>
 </div>
 

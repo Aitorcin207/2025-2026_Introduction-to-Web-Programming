@@ -33,7 +33,7 @@ canvas {
   --shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-#mainmenu {
+#MainMenu {
   background: white;
   border-radius: 8px;
   padding: 1em;
@@ -46,10 +46,10 @@ canvas {
   scrollbar-color: #bbb #f5f8fc;
 }
 
-#mainmenu::-webkit-scrollbar {
+#MainMenu::-webkit-scrollbar {
   width: 6px;
 }
-#mainmenu::-webkit-scrollbar-thumb {
+#MainMenu::-webkit-scrollbar-thumb {
   background-color: #bbb;
   border-radius: 3px;
 }
@@ -83,7 +83,7 @@ canvas {
   background: #eef5ff;
 }
 
-#cryptosList div {
+#CryptosList div {
   background: #e8efff;
   padding: 0.6em;
   border-radius: 6px;
@@ -92,7 +92,7 @@ canvas {
   user-select: none;
   transition: transform 0.1s;
 }
-#cryptosList div:active {
+#CryptosList div:active {
   transform: scale(0.97);
 }
 
@@ -138,7 +138,7 @@ canvas {
     font-size: 1.4em;
   }
 
-  #mainmenu {
+  #MainMenu {
     width: 100%;
     max-height: none;
     order: 2;
@@ -156,7 +156,7 @@ canvas {
     height: auto;
   }
 
-  #mainmenu button, #mainmenu select, #mainmenu input {
+  #MainMenu button, #MainMenu select, #MainMenu input {
     width: 100%;
     margin-top: 0.5em;
   }
