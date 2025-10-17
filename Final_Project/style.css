@@ -1,163 +1,209 @@
 /* Final project from Aitor Martin Lopez 003355176 */
 
+/* Here is the general style used for all the page */
 body {
-  font-family: Arial, sans-serif;
-  margin: 0;
   background: var(--light-bg);
   color: #222;
+  margin: 0;
   overflow-x: hidden;
+  font-family: Arial, sans-serif;
+
 }
 
+/* Style for the main area of the web page */
 main {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 1em;
   gap: 1em;
+  padding: 1em;
+  flex-wrap: wrap;
+  display: flex;
+
 }
 
+/* Style used for the header of the web page */
 header {
-  background: var(--blue);
-
-  padding: 1em;
   text-align: center;
-}
-
-canvas {
-  width: 100%;
-  height: 350px;
-}
-
-:root {
-  --blue: #ad5100;
-
-  --shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-#MainMenu {
-  background: white;
-  border-radius: 8px;
-  padding: 1em;
-  width: 250px;
   box-shadow: var(--shadow);
-  flex-shrink: 0;
-  max-height: 85vh;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #bbb #f5f8fc;
+  padding: 1em;
+  background: var(--brown);
+  color: white;
+
 }
 
+/* Style for the canvas created for the charts on the web page */
+canvas {
+  height: 350px;
+  width: 100%;
+
+}
+
+/* Specific styles for the header */
+:root {
+  --brown: #ad5100;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+}
+
+/* Style used for the main menu that is located on the left side of the web page */
+#MainMenu {
+  width: 250px;
+  box-shadow: var(--shadow);    
+  max-height: 85vh;
+  scrollbar-width: thin;
+  border-radius: 8px;
+  overflow-y: auto;
+  background: white;
+  padding: 1em;
+  scrollbar-color: #bbb #f5f8fc;
+  flex-shrink: 0;
+
+}
+
+/* This is a unique scrollbar only for the menu on the side */
 #MainMenu::-webkit-scrollbar {
   width: 6px;
-}
-#MainMenu::-webkit-scrollbar-thumb {
-  background-color: #bbb;
-  border-radius: 3px;
+  background: #f5f8fc;
+
 }
 
+/* Style for the chart that allow you to see cryptocurrencies */
 #CryptoChart {
-  flex: 1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1em;
   justify-content: center;
+  flex: 1;
+  gap: 1em;
+  flex-wrap: wrap;
+  display: flex;
+
 }
 
+/* Style used for the containers that can be found on the charts */
 .chart-container {
+  overflow: hidden;
   background: white;
-  border-radius: 8px;
-  padding: 1em;
-  box-shadow: var(--shadow);
-  flex: 1 1 400px;
   max-width: 600px;
   min-width: 300px;
-  overflow: hidden;
-}
-
-.dropzone {
-  border: 2px dashed #ccc;
-  position: relative;
-  transition: background 0.2s, border-color 0.2s;
-}
-.dropzone.dragover {
-  border-color: var(--blue);
-  background: #eef5ff;
-}
-
-#CryptosList div {
-  background: #e8efff;
-  padding: 0.6em;
-  border-radius: 6px;
-  margin-bottom: 0.5em;
-  cursor: grab;
-  user-select: none;
-  transition: transform 0.1s;
-}
-#CryptosList div:active {
-  transform: scale(0.97);
-}
-
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 10;
-  padding-top: 100px;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.5);
-}
-
-.modal-content {
-  background: white;
-  margin: auto;
-  padding: 20px;
-  width: 90%;
-  max-width: 400px;
   border-radius: 8px;
   box-shadow: var(--shadow);
+  padding: 1em;
+  flex: 1 1 400px;
+
 }
 
+/* Style used when you are dragging a crypto over the chart area */
+.dropzone {
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+  border: 2px dashed #ccc;
+
+}
+
+/* Style used when you drop a crypto over the chart area */
+.dropzone.dragover {
+  background: #eef5ff;
+  border-color: var(--blue);
+
+}
+
+/* Style used for the list of cryptos that appear on the meno on the left*/
+#CryptosList div {
+  transition: transform 0.1s;
+  margin-bottom: 0.5em;
+  border-radius: 6px;
+  padding: 0.6em;
+  cursor: grab;
+  user-select: none;
+  background: #e8efff;
+
+}
+
+/* Style that appear when you click and drag a crypto from the menu */
+#CryptosList div:active {
+  transform: scale(0.97);
+
+}
+
+/* Style for the window that appears when you click on a point of the chart */
+.modal {
+  background-color: rgba(0,0,0,0.5);
+  padding-top: 100px;
+  display: none;
+  z-index: 10;
+  position: fixed;
+  width: 100%; height: 100%;
+  left: 0; top: 0;
+
+}
+
+/* Style used for the content that appears of the window */
+.modal-content {
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+  background: white;
+  max-width: 600px;
+  padding: 20px;
+  margin: auto;
+  width: 90%;
+
+}
+
+/* Style for the way you close the window(is an x on the right corner) */
 .close {
+  font-size: 40px;
   float: right;
   cursor: pointer;
-  font-size: 20px;
+
 }
 
 
 /* Responsive for mobile phones */
 @media (max-width: 768px) {
+  /* Main area styles for mobile phones */
   main {
-    flex-direction: column;
     padding: 0.5em;
+    flex-direction: column;
+
   }
   
+  /* Chart canvas styles for mobile phones */
   canvas {
     height: 250px;
+
   }
 
+  /* Header styles for mobile phones */
   header h1 {
     font-size: 1.4em;
+
   }
 
+  /* Menu styles used for mobile phones */
   #MainMenu {
-    width: 100%;
     max-height: none;
-    order: 2;
-  }
-
-  #CryptoChart {
     width: 100%;
-    order: 1;
+    order: 2;
+
   }
 
+  /* Chart area styles used in the crypto chart for mobile phones */
+  #CryptoChart {
+    order: 1;
+    width: 100%;
+
+  }
+  
+  /* Chart container styles used for mobile phones */
   .chart-container {
     width: 100%;
-    min-width: 100%;
     max-width: 100%;
+    min-width: 100%;
     height: auto;
+
   }
 
+  /* Styles for the elements inside the menu(that in mobiles its not in the left but below) for mobile phones */
   #MainMenu button, #MainMenu select, #MainMenu input {
-    width: 100%;
     margin-top: 0.5em;
+    width: 100%;
+
   }
+
 }
