@@ -29,8 +29,8 @@ function Drop_zone(container) {
     }
     // The color selected by the user
     const color = document.getElementById("ChangeColor").value;
-    const days = time_range_for_charts(document.getElementById("TimeRange").value);
-    await fetch_and_add_data(load, color, days, container.chart);
+    const numdays = time_range_for_charts(document.getElementById("TimeRange").value);
+    await fetch_and_add_data(load, color, numdays, container.chart);
   });
 }
 
@@ -82,9 +82,9 @@ function Drag_objects() {
       if (dropzone) {
         const load3 = JSON.parse(el.dataset.dragPayload);
         const color = document.getElementById("ChangeColor").value;
-        const days = time_range_for_charts(document.getElementById("TimeRange").value);
+        const numdays2 = time_range_for_charts(document.getElementById("TimeRange").value);
         // This is the function to fetch the data and add it to this first chart
-        fetch_and_add_data(load3, color, days, dropzone.chart);
+        fetch_and_add_data(load3, color, numdays2, dropzone.chart);
       }
     });
   });
@@ -175,13 +175,13 @@ function initialitate_the_chart(canvas) {
 }
 
 // This function make able to Fetch & route the data obtained from the APIs(it is async to make the fetch without failing)
-async function fetch_and_add_data(load4, color, days, chart) {
+async function fetch_and_add_data(load4, color, times, chart) {
   try {
     // Use the active chart
     if (!chart) chart = activeGraph;
     // Calling the function depending on the type of data we need to fetch
     if (load4.type === "crypto") {
-      await add_new_cryto(load4.id, color, days, chart);
+      await add_new_cryto(load4.id, color, times, chart);
 
     } else if (load4.type === "metal") {
 
@@ -194,9 +194,9 @@ async function fetch_and_add_data(load4, color, days, chart) {
 }
 
 // This function fetches the data from CoinGecko API and adds it to the chart with the caracteristics selected by the web user
-async function add_new_cryto(coinId, color, days, chart) {
+async function add_new_cryto(coinId, color, times, chart) {
   try {
-    const daysParam = (days === "max") ? "max" : Math.max(1, days);
+    const daysParam = (times === "max") ? "max" : Math.max(1, times);
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${daysParam}`;
     const res = await fetch(url);
     // Check for some errors in the web request
@@ -266,10 +266,10 @@ window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; 
 document.getElementById("DownloadPNG").addEventListener("click", () => {
   // Download the active chart that is being used as a PNG
   if (!activeGraph) return;
-  const link = document.createElement("a");
-  link.href = activeGraph.toBase64Image();
-  link.download = "chart.png";
-  link.click();
+  const toDownload = document.createElement("a");
+  toDownload.href = activeGraph.toBase64Image();
+  toDownload.download = "chart.png";
+  toDownload.click();
 });
 
 // Function used for share button to work
@@ -459,7 +459,7 @@ function change_comparison_USD() {
   load_new_currencies(exchangeTime);
 }
 // This function uses the API of Frankfurter to fetch the values of the exchange currencies
-async function values_comparison_USD(days, chart) {
+async function values_comparison_USD(daysnum, chart) {
   // First we clear the data of the last time range used
   try {
     const end = new Date();
@@ -467,11 +467,11 @@ async function values_comparison_USD(days, chart) {
     // To set the start date depending on the time range selected by the user
     // If max is selected the chart will show from 10 years befor the day used
     // (the API used ddoes not allow me to make the range up to 20 years)
-    if (days === "max") {
+    if (daysnum === "max") {
       start.setFullYear(end.getFullYear() - 10);
     // if selected any other time range that max we use that amount of time
     } else {
-      start.setDate(end.getDate() - Number(days));
+      start.setDate(end.getDate() - Number(daysnum));
     }
     // We change the format of tha date used to coincide with the ones used by the API
     const s = start.toISOString().split("T")[0];
@@ -516,15 +516,15 @@ async function values_comparison_USD(days, chart) {
 }
 // This asyncronate function is to load the data of the exchange currencies
 // depending on the time range that has been selected by the user
-async function load_new_currencies(days) {
-  exchangeTime = days;
+async function load_new_currencies(timenum) {
+  exchangeTime = timenum;
   // To initialize the chart if needed
   if (!chartExchange) Exchange_currencies_chart();
   chartExchange.data.labels = [];
   chartExchange.data.datasets = [];
   // To update the chart with the new data
   chartExchange.update();
-  await values_comparison_USD(days, chartExchange);
+  await values_comparison_USD(timenum, chartExchange);
 }
 // This function is used to being able to download the data as a CSV file is the user wants
 function download_charts_CSV() {
@@ -560,12 +560,12 @@ function download_charts_PNG() {
     return;
   }
   // This is going to be the link of the download of the image
-  const link = document.createElement("a");
+  const toDownloadEX = document.createElement("a");
   // To get the image from the chart
-  link.href = chartExchange.toBase64Image();
+  toDownloadEX.href = chartExchange.toBase64Image();
   // And the name of the file
-  link.download = `USD_${exchangeCurrent}_exchange.png`;
-  link.click();
+  toDownloadEX.download = `USD_${exchangeCurrent}_exchange.png`;
+  toDownloadEX.click();
 }
 // Initialize the second chart on the page when this one is open
 window.addEventListener("DOMContentLoaded", () => {
@@ -575,12 +575,12 @@ window.addEventListener("DOMContentLoaded", () => {
   load_new_currencies("365");
 });
 // This function is used to format the date to the format used by CoinGecko API(dd-mm-yyyy)
-function formatDateForCG(dateStr) {
+function formatDateForCG(dateGiven) {
   // Create a Date object from the input date string
-  const d = new Date(dateStr);
-  const dd = String(d.getUTCDate()).padStart(2, "0");
-  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const yyyy = d.getUTCFullYear();
+  const day = new Date(dateGiven);
+  const days = String(day.getUTCDate()).padStart(2, "0");
+  const month = String(day.getUTCMonth() + 1).padStart(2, "0");
+  const year = day.getUTCFullYear();
   // Return the date in dd-mm-yyyy format like the API
-  return `${dd}-${mm}-${yyyy}`;
+  return `${days}-${month}-${year}`;
 }
