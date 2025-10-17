@@ -112,7 +112,7 @@
   <div class="controls">
     <label for="fxTargetSelect">Target currency:</label>
     <!-- To select the currency that we are going to compare to the USD -->
-    <select id="fxTargetSelect" onchange="onFXTargetChange()">
+    <select id="fxTargetSelect" onchange="change_comparison_USD()">
       <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
       <option value="EUR" selected>EUR</option>
       <option value="JPY">JPY (Yen)</option>
@@ -122,13 +122,13 @@
     </select>
 
     <!-- Buttons to select the time range of the exchange data currencies by default 1 year is selected -->
-    <button onclick="loadFXRange('30')">1M</button>
-    <button onclick="loadFXRange('180')">6M</button>
-    <button onclick="loadFXRange('365')">1Y</button>
-    <button onclick="loadFXRange('1825')">5Y</button>
-    <button onclick="loadFXRange('max')">Max</button>
-    <button onclick="downloadFXCSV()">Download CSV</button>
-    <button onclick="downloadFXPNG()">Download PNG</button>
+    <button onclick="load_new_currencies('30')">1M</button>
+    <button onclick="load_new_currencies('180')">6M</button>
+    <button onclick="load_new_currencies('365')">1Y</button>
+    <button onclick="load_new_currencies('1825')">5Y</button>
+    <button onclick="load_new_currencies('max')">Max</button>
+    <button onclick="download_charts_CSV()">Download CSV</button>
+    <button onclick="download_charts_PNG()">Download PNG</button>
   </div>
   <!-- The container of the chart maximum size -->
   <div class="fx-container" style="max-width:100%; max-height:360px; overflow:auto;">

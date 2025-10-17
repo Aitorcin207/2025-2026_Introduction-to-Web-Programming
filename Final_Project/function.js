@@ -6,10 +6,10 @@ let activeChart = null;
 const purchases = [];
 
 // This initiate the first chart on page load
-initChart(document.querySelector(".chart-container canvas"));
+initialitate_the_chart(document.querySelector(".chart-container canvas"));
 
 //This is the drag and drop setup used for charts
-function setupDropzone(container) {
+function Drop_zone(container) {
   container.addEventListener("dragover", e => {
     e.preventDefault();
     container.classList.add("dragover");
@@ -29,13 +29,13 @@ function setupDropzone(container) {
     }
     // The color selected by the user
     const color = document.getElementById("colorPicker").value;
-    const days = getDaysFromRange(document.getElementById("timeRange").value);
-    await fetchDataAndAdd(payload, color, days, container.chart);
+    const days = time_range_for_charts(document.getElementById("timeRange").value);
+    await fetch_and_add_data(payload, color, days, container.chart);
   });
 }
 
 // this function allows to drag objects by activatiing it tactility
-function enableTouchDrag() {
+function Drag_objects() {
   const draggables = document.querySelectorAll("#draggables div");
   // To make each draggable object
   draggables.forEach(el => {
@@ -82,19 +82,19 @@ function enableTouchDrag() {
       if (dropzone) {
         const payload = JSON.parse(el.dataset.dragPayload);
         const color = document.getElementById("colorPicker").value;
-        const days = getDaysFromRange(document.getElementById("timeRange").value);
+        const days = time_range_for_charts(document.getElementById("timeRange").value);
         // This is the function to fetch the data and add it to this first chart
-        fetchDataAndAdd(payload, color, days, dropzone.chart);
+        fetch_and_add_data(payload, color, days, dropzone.chart);
       }
     });
   });
 }
 
 // Activate the Drag & Drop function
-enableTouchDrag();
+Drag_objects();
 
 // This are the time ranges used for the chart
-function getDaysFromRange(val) {
+function time_range_for_charts(val) {
   switch (val) {
     case "1": return 1;
     case "3": return 3;
@@ -132,12 +132,12 @@ document.getElementById("addChart").addEventListener("click", () => {
   const canvas = document.createElement("canvas");
   container.appendChild(canvas);
   section.appendChild(container);
-  initChart(canvas);
-  setupDropzone(container);
+  initialitate_the_chart(canvas);
+  Drop_zone(container);
 });
 
 // This function initializes and creates the new chart in the canvas
-function initChart(canvas) {
+function initialitate_the_chart(canvas) {
   // Creates the chart object
   const chart = new Chart(canvas.getContext("2d"), {
     type: "line",
@@ -154,7 +154,7 @@ function initChart(canvas) {
           const value = dataset.data[el.index];
           const date = chart.data.labels[el.index];
           // The function used to show the modal
-          showModal(`${dataset.label}<br><strong>${date}</strong><br>Value: ${Number(value).toFixed(4)}`);
+          show_more_info(`${dataset.label}<br><strong>${date}</strong><br>Value: ${Number(value).toFixed(4)}`);
         }
       },
       // The plugins that are being used in the chart
@@ -169,26 +169,26 @@ function initChart(canvas) {
   charts.push(chart);
   activeChart = chart;
   // The setup of the dropzone used for the drag and drop function
-  setupDropzone(canvas.parentElement);
+  Drop_zone(canvas.parentElement);
   // The chart is activated when its being clicked
   canvas.addEventListener("pointerdown", () => activeChart = chart);
 }
 
 // This function make able to Fetch & route the data obtained from the APIs(it is async to make the fetch without failing)
-async function fetchDataAndAdd(payload, color, days, chart) {
+async function fetch_and_add_data(payload, color, days, chart) {
   try {
     // Use the active chart
     if (!chart) chart = activeChart;
     // Calling the function depending on the type of data we need to fetch
     if (payload.type === "crypto") {
-      await addCrypto(payload.id, color, days, chart);
+      await add_new_cryto(payload.id, color, days, chart);
 
     } else if (payload.type === "metal") {
 
     } else {
       console.warn("Unknown payload type", payload);
     }
-    mergeDataExample(chart);
+
   // Error in fetching data
   } catch (err) {
     console.error("Fetch error:", err);
@@ -196,7 +196,7 @@ async function fetchDataAndAdd(payload, color, days, chart) {
 }
 
 // This function fetches the data from CoinGecko API and adds it to the chart with the caracteristics selected by the web user
-async function addCrypto(coinId, color, days, chart) {
+async function add_new_cryto(coinId, color, days, chart) {
   try {
     const daysParam = (days === "max") ? "max" : Math.max(1, days);
     const url = `https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=${daysParam}`;
@@ -226,12 +226,12 @@ async function addCrypto(coinId, color, days, chart) {
     });
     chart.update();
   } catch (err) {
-    console.error("addCrypto error:", err);
+    console.error("add_new_cryto error:", err);
   }
 }
 
 // This function tries to merge the data from two cryptos and use the currency EUR(does not work properly)
-// function mergeDataExample(chart) {
+// function combine_data_cryptos(chart) {
 //   const btcUSD = chart.data.datasets.find(d => d.label?.includes("bitcoin (USD)"));
 //   const usdEUR = chart.data.datasets.find(d => d.label?.includes("USD/EUR"));
 //   if (btcUSD && usdEUR && !chart.data.datasets.find(d => d.label?.includes("bitcoin (EUR)"))) {
@@ -254,7 +254,7 @@ const modal = document.getElementById("infoModal");
 const modalBody = document.getElementById("modalBody");
 const closeBtn = document.querySelector(".close");
 // Show the modal with the info of the data point in html
-function showModal(html) {
+function show_more_info(html) {
   modalBody.innerHTML = html;
   modal.style.display = "block";
 }
@@ -303,7 +303,7 @@ document.getElementById("share").addEventListener("click", async () => {
 
 // This function allows to change the time range used in the chats
 document.getElementById("timeRange").addEventListener("change", async () => {
-  const newDays = getDaysFromRange(document.getElementById("timeRange").value);
+  const newDays = time_range_for_charts(document.getElementById("timeRange").value);
   // For each of the charts that is being used we need to fetch again the data in the new time range
   for (const chart of charts) {
     const datasets = [...chart.data.datasets];
@@ -315,11 +315,11 @@ document.getElementById("timeRange").addEventListener("change", async () => {
       // Determine if it is a crypto or other type of data
       if (label.includes("(USD)") && !label.includes("/")) {
         const coinId = label.split(" ")[0];
-        await addCrypto(coinId, ds.borderColor || "#000", newDays, chart);
+        await add_new_cryto(coinId, ds.borderColor || "#000", newDays, chart);
       // Other types of data
       } else {
         const coinId = label.split(" ")[0];
-        await addCrypto(coinId, ds.borderColor || "#000", newDays, chart);
+        await add_new_cryto(coinId, ds.borderColor || "#000", newDays, chart);
       }
     }
   }
@@ -340,12 +340,12 @@ document.getElementById("buyForm").addEventListener("submit", async (e) => {
   }
   // Add the purchase done to the "portfolio"
   purchases.push({ coin, date, amount });
-  await updatePortfolioSummary();
+  await porfolio_for_purchases();
   document.getElementById("buyForm").reset();
 });
 
 // This function is an asyncronate one that updates the portfolio accordingly to the purchases that have been made
-async function updatePortfolioSummary() {
+async function porfolio_for_purchases() {
   // Summary of the portfolio displayed for the user
   const container = document.getElementById("portfolioSummary");
   container.innerHTML = "<em>Calculating...</em>";
@@ -402,7 +402,7 @@ let fxCurrentTarget = "EUR";
 let fxCurrentDays = "365";
 
 // This function is used to initialize the second chart(the exchange currencies one)
-function initFXChart() {
+function Exchange_currencies_chart() {
   // First create the chart object in the canvas
   const ctx = document.getElementById("fxChart").getContext("2d");
   // This is the chart configuration that will be in the web
@@ -422,7 +422,7 @@ function initFXChart() {
           const date = fxChart.data.labels[el.index];
           const value = ds.data[el.index];
           // To use the modal function of before to show the info of the data points clicked
-          showModal(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
+          show_more_info(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
         }
       },
       // the plugins used in this chart
@@ -444,15 +444,15 @@ function initFXChart() {
 }
 // This is the function that allows to change the currency that is being compared 
 // with the USD(The API used the dollar as base currency so I have to use that)
-function onFXTargetChange() {
+function change_comparison_USD() {
   // to get the currency selecte by the user
   const sel = document.getElementById("fxTargetSelect");
   fxCurrentTarget = sel.value;
   // Function to load the data of the new used currency
-  loadFXRange(fxCurrentDays);
+  load_new_currencies(fxCurrentDays);
 }
 // This function uses the API of Frankfurter to fetch the values of the exchange currencies
-async function fetchUSDToTarget(days, chart) {
+async function values_comparison_USD(days, chart) {
   // First we clear the data of the last time range used
   try {
     const end = new Date();
@@ -491,36 +491,36 @@ async function fetchUSDToTarget(days, chart) {
         label: `USD/${fxCurrentTarget}`,
         data: values,
         borderColor: "#00ff99ff",
-        fill: false
+
       },
       {
         // The target currency selected by the user against the USD
         label: `${fxCurrentTarget}/USD`,
         data: values.map(v => (v != null ? 1 / v : null)),
         borderColor: "#0095ffff",
-        fill: false
+
       }
     ];
     chart.update();
   // Error when fetching the exchange of the currency data
   } catch (err) {
-    console.error("fetchUSDToTarget failed:", err);
+    console.error("values_comparison_USD failed:", err);
   }
 }
 // This asyncronate function is to load the data of the exchange currencies
 // depending on the time range that has been selected by the user
-async function loadFXRange(days) {
+async function load_new_currencies(days) {
   fxCurrentDays = days;
   // To initialize the chart if needed
-  if (!fxChart) initFXChart();
+  if (!fxChart) Exchange_currencies_chart();
   fxChart.data.labels = [];
   fxChart.data.datasets = [];
   // To update the chart with the new data
   fxChart.update();
-  await fetchUSDToTarget(days, fxChart);
+  await values_comparison_USD(days, fxChart);
 }
 // This function is used to being able to download the data as a CSV file is the user wants
-function downloadFXCSV() {
+function download_charts_CSV() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
   if (!fxChart || !fxChart.data.labels.length) {
     alert("No FX data to download yet!");
@@ -546,7 +546,7 @@ function downloadFXCSV() {
   a.click();
 }
 // This function is used to download the chart as a PNG image
-function downloadFXPNG() {
+function download_charts_PNG() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
   if (!fxChart) {
     alert("FX chart not ready!");
@@ -563,7 +563,7 @@ function downloadFXPNG() {
 // Initialize the second chart on the page when this one is open
 window.addEventListener("DOMContentLoaded", () => {
   // Uses function for initializing the chart
-  initFXChart();
+  Exchange_currencies_chart();
   // maximum one year putted by default
-  loadFXRange("365");
+  load_new_currencies("365");
 });
