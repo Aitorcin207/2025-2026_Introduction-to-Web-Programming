@@ -425,10 +425,10 @@ function Exchange_currencies_chart() {
       onClick: (e, elements) => {
         // To check if the user clicks the data points
         if (elements.length) {
-          const el = elements[0];
-          const ds = chartExchange.data.datasets[el.datasetIndex];
-          const date = chartExchange.data.labels[el.index];
-          const value = ds.data[el.index];
+          const element = elements[0];
+          const ds = chartExchange.data.datasets[element.datasetIndex];
+          const date = chartExchange.data.labels[element.index];
+          const value = ds.data[element.index];
           // To use the modal function of before to show the info of the data points clicked
           show_more_info(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
         }
