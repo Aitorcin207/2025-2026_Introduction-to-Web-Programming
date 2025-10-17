@@ -426,11 +426,11 @@ function Exchange_currencies_chart() {
         // To check if the user clicks the data points
         if (elements.length) {
           const element = elements[0];
-          const ds = chartExchange.data.datasets[element.datasetIndex];
-          const date = chartExchange.data.labels[element.index];
-          const value = ds.data[element.index];
+          const dataset = chartExchange.data.datasets[element.datasetIndex];
+          const timeRanges = chartExchange.data.labels[element.index];
+          const valuedata = dataset.data[element.index];
           // To use the modal function of before to show the info of the data points clicked
-          show_more_info(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
+          show_more_info(`${dataset.label}<br><strong>${timeRanges}</strong><br>Rate: ${Number(valuedata).toFixed(6)}`);
         }
       },
       // the plugins used in this chart
@@ -463,27 +463,27 @@ function change_comparison_USD() {
 async function values_comparison_USD(daysnum, chart) {
   // First we clear the data of the last time range used
   try {
-    const end = new Date();
-    const start = new Date();
+    const endDate = new Date();
+    const startDate = new Date();
     // To set the start date depending on the time range selected by the user
     // If max is selected the chart will show from 10 years befor the day used
     // (the API used ddoes not allow me to make the range up to 20 years)
     if (daysnum === "max") {
-      start.setFullYear(end.getFullYear() - 10);
+      startDate.setFullYear(endDate.getFullYear() - 10);
     // if selected any other time range that max we use that amount of time
     } else {
-      start.setDate(end.getDate() - Number(daysnum));
+      startDate.setDate(endDate.getDate() - Number(daysnum));
     }
     // We change the format of tha date used to coincide with the ones used by the API
-    const s = start.toISOString().split("T")[0];
-    const e = end.toISOString().split("T")[0];
+    const startNew = startDate.toISOString().split("T")[0];
+    const endNew = endDate.toISOString().split("T")[0];
     // This is the URL of the API used to ge the data of the exchange currencies
-    const frankfurter = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${exchangeCurrent}`;
+    const frankfurter = `https://api.frankfurter.app/${startNew}..${endNew}?from=USD&to=${exchangeCurrent}`;
     // sometimes it saturates
-    const res = await fetch(frankfurter);
+    const saturate = await fetch(frankfurter);
     // We check for errors in the fetch request
-    if (!res.ok) throw new Error(`there's have been an error fetching Frankfurter: ${res.status}`);
-    const data = await res.json();
+    if (!saturate.ok) throw new Error(`there's have been an error fetching Frankfurter: ${saturate.status}`);
+    const data = await saturate.json();
     // Process the data to get the values with its dates
     const datesEX = Object.keys(data.rates).sort();
     const valuesEX = datesEX.map(d => {
