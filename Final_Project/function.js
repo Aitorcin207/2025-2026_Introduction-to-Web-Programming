@@ -1,9 +1,9 @@
 // Final project from Aitor Martin Lopez 003355176
 
-let charts = [];
-let activeChart = null;
+let graph = [];
+let activeGraph = null;
 // Used to make the purchases on the porfolio
-const purchases = [];
+const porfoliobuys = [];
 
 // This initiate the first chart on page load
 initialitate_the_chart(document.querySelector(".ChartContainer canvas"));
@@ -19,10 +19,10 @@ function Drop_zone(container) {
   container.addEventListener("drop", async e => {
     e.preventDefault();
     container.classList.remove("dragover");
-    let payload = {};
+    let load = {};
     // To being able to parse the data obtained from the drag event
     try {
-      payload = JSON.parse(e.dataTransfer.getData("text/plain") || "{}");
+      load = JSON.parse(e.dataTransfer.getData("text/plain") || "{}");
     } catch (err) {
       console.warn("There has been an error in the dragging.", err);
       return;
@@ -30,7 +30,7 @@ function Drop_zone(container) {
     // The color selected by the user
     const color = document.getElementById("ChangeColor").value;
     const days = time_range_for_charts(document.getElementById("TimeRange").value);
-    await fetch_and_add_data(payload, color, days, container.chart);
+    await fetch_and_add_data(load, color, days, container.chart);
   });
 }
 
@@ -42,7 +42,7 @@ function Drag_objects() {
     // For the start of the draging
     el.addEventListener("touchstart", e => {
       const touch = e.touches[0];
-      const payload = {
+      const load2 = {
         type: el.dataset.type,
         id: el.dataset.id,
         base: el.dataset.base,
@@ -50,7 +50,7 @@ function Drag_objects() {
         symbol: el.dataset.symbol
       };
       // This is for storing the crypto that is being dragged
-      el.dataset.dragPayload = JSON.stringify(payload);
+      el.dataset.dragPayload = JSON.stringify(load2);
       // This is to create an effect that is going to be used when the dragging
       const ghost = el.cloneNode(true);
       ghost.style.position = "fixed";
@@ -80,11 +80,11 @@ function Drag_objects() {
       const dropzone = document.elementFromPoint(touch.clientX, touch.clientY)?.closest(".dropzone");
       // This is if the place we dropped the object is a valid dropzone we do this
       if (dropzone) {
-        const payload = JSON.parse(el.dataset.dragPayload);
+        const load3 = JSON.parse(el.dataset.dragPayload);
         const color = document.getElementById("ChangeColor").value;
         const days = time_range_for_charts(document.getElementById("TimeRange").value);
         // This is the function to fetch the data and add it to this first chart
-        fetch_and_add_data(payload, color, days, dropzone.chart);
+        fetch_and_add_data(load3, color, days, dropzone.chart);
       }
     });
   });
@@ -111,14 +111,14 @@ function time_range_for_charts(val) {
 // This is the function about the drag & drop data transfer
 document.querySelectorAll("#CryptosList div").forEach(el => {
   el.addEventListener("dragstart", e => {
-    const payload = {
+    const load4 = {
       type: el.dataset.type,
       id: el.dataset.id,
       base: el.dataset.base,
       symbols: el.dataset.symbols,
       symbol: el.dataset.symbol
     };
-    e.dataTransfer.setData("text/plain", JSON.stringify(payload));
+    e.dataTransfer.setData("text/plain", JSON.stringify(load4));
   });
 });
 
@@ -166,24 +166,24 @@ function initialitate_the_chart(canvas) {
   });
   // This is used to link the chart with its own container
   canvas.parentElement.chart = chart;
-  charts.push(chart);
-  activeChart = chart;
+  graph.push(chart);
+  activeGraph = chart;
   // The setup of the dropzone used for the drag and drop function
   Drop_zone(canvas.parentElement);
   // The chart is activated when its being clicked
-  canvas.addEventListener("pointerdown", () => activeChart = chart);
+  canvas.addEventListener("pointerdown", () => activeGraph = chart);
 }
 
 // This function make able to Fetch & route the data obtained from the APIs(it is async to make the fetch without failing)
-async function fetch_and_add_data(payload, color, days, chart) {
+async function fetch_and_add_data(load4, color, days, chart) {
   try {
     // Use the active chart
-    if (!chart) chart = activeChart;
+    if (!chart) chart = activeGraph;
     // Calling the function depending on the type of data we need to fetch
-    if (payload.type === "crypto") {
-      await add_new_cryto(payload.id, color, days, chart);
+    if (load4.type === "crypto") {
+      await add_new_cryto(load4.id, color, days, chart);
 
-    } else if (payload.type === "metal") {
+    } else if (load4.type === "metal") {
 
     }
 
@@ -265,9 +265,9 @@ window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; 
 // Function used for download button to work
 document.getElementById("DownloadPNG").addEventListener("click", () => {
   // Download the active chart that is being used as a PNG
-  if (!activeChart) return;
+  if (!activeGraph) return;
   const link = document.createElement("a");
-  link.href = activeChart.toBase64Image();
+  link.href = activeGraph.toBase64Image();
   link.download = "chart.png";
   link.click();
 });
@@ -275,9 +275,9 @@ document.getElementById("DownloadPNG").addEventListener("click", () => {
 // Function used for share button to work
 document.getElementById("shareCrypto").addEventListener("click", async () => {
   // Share the active chart that is being used
-  if (!activeChart) return;
+  if (!activeGraph) return;
   try {
-    const dataUrl = activeChart.toBase64Image();
+    const dataUrl = activeGraph.toBase64Image();
     const res = await fetch(dataUrl);
     const blob = await res.blob();
     const file = new File([blob], "chart.png", { type: blob.type });
@@ -297,7 +297,7 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
     console.error("Share failed", err);
     alert("There is a problem and you are not able to share to this place.");
     const w = window.open();
-    w.document.write(`<img src="${activeChart.toBase64Image()}" alt="chart">`);
+    w.document.write(`<img src="${activeGraph.toBase64Image()}" alt="chart">`);
   }
 });
 
@@ -305,7 +305,7 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
 document.getElementById("TimeRange").addEventListener("change", async () => {
   const newDays = time_range_for_charts(document.getElementById("TimeRange").value);
   // For each of the charts that is being used we need to fetch again the data in the new time range
-  for (const chart of charts) {
+  for (const chart of graph) {
     const datasets = [...chart.data.datasets];
     chart.data.datasets = [];
     chart.data.labels = [];
@@ -346,7 +346,7 @@ document.getElementById("BuyCrypto").addEventListener("submit", async (e) => {
     return;
   }
   // Add the purchase done to the "portfolio"
-  purchases.push({ coin, date, amount });
+  porfoliobuys.push({ coin, date, amount });
   await porfolio_for_purchases();
   document.getElementById("BuyCrypto").reset();
 });
@@ -358,9 +358,9 @@ async function porfolio_for_purchases() {
   container.innerHTML = "<em>Calculating...</em>";
   const summary = [];
   // The initial total value of the portfolio
-  let totalCurrentValue = 0;
+  let StartCurrentValue = 0;
   // For each of the purchases made we need to fetch the data we get to calcule the benefit/loses from CoinGecko API
-  for (const p of purchases) {
+  for (const p of porfoliobuys) {
     // This get the value of the coin at the current time inserted by the user(if it is valid)
     try {
       // Use the API to get the data
@@ -384,13 +384,13 @@ async function porfolio_for_purchases() {
       const invested = boughtPrice * p.amount;
       // The value of the coin now
       const currentValue = currentPrice * p.amount;
-      totalCurrentValue += currentValue;
+      StartCurrentValue += currentValue;
       const pct = ((currentValue - invested) / invested) * 100;
-      let rec = "Hold";
+      let recommendation = "Hold";
       // The recommendations that are given to the user depending on the percentage obtained
-      if (pct > 5) rec = "You should consider selling the coins (the profit is > 5%)";
-      else if (pct < -5) rec = "You should consider buying more coins (the crypto has drop > 5%)";
-      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${pct.toFixed(2)}%). Recommendation: ${rec}`);
+      if (pct > 5) recommendation = "You should consider selling the coins (the profit is > 5%)";
+      else if (pct < -5) recommendation = "You should consider buying more coins (the crypto has drop > 5%)";
+      summary.push(`amount of ${p.coin} bought ${p.amount} @ ${boughtPrice.toFixed(2)} USD on ${p.date} → current price ${currentPrice.toFixed(2)} USD → total value ${currentValue.toFixed(2)} USD (${pct.toFixed(2)}%). Recommendation: ${recommendation}`);
     // Error in the fetching of the data that is going to be used for the portfolio item
     } catch (err) {
       console.error("The porfolio functionality has failed", err);
@@ -398,22 +398,22 @@ async function porfolio_for_purchases() {
     }
   }
   // Now we update the porfolio with the new data added and obtained
-  container.innerHTML = `<strong>Portfolio</strong><br>${summary.join("<br>")}<br><strong>Total current value:</strong> ${totalCurrentValue.toFixed(2)} USD`;
+  container.innerHTML = `<strong>Portfolio</strong><br>${summary.join("<br>")}<br><strong>Total current value:</strong> ${StartCurrentValue.toFixed(2)} USD`;
 }
 
 // This is the chart of the currencies exchanges(not the crypto ones)
-let fxChart;
+let chartExchange;
 // The current target currency that is being used at starting the web
-let fxCurrentTarget = "EUR";
+let exchangeCurrent = "EUR";
 // The current amount of time used at the starting of the web
-let fxCurrentDays = "365";
+let exchangeTime = "365";
 
 // This function is used to initialize the second chart(the exchange currencies one)
 function Exchange_currencies_chart() {
   // First create the chart object in the canvas
   const ctx = document.getElementById("ExchangeChart").getContext("2d");
   // This is the chart configuration that will be in the web
-  fxChart = new Chart(ctx, {
+  chartExchange = new Chart(ctx, {
     type: "line",
     data: { labels: [], datasets: [] },
     options: {
@@ -425,8 +425,8 @@ function Exchange_currencies_chart() {
         // To check if the user clicks the data points
         if (elements.length) {
           const el = elements[0];
-          const ds = fxChart.data.datasets[el.datasetIndex];
-          const date = fxChart.data.labels[el.index];
+          const ds = chartExchange.data.datasets[el.datasetIndex];
+          const date = chartExchange.data.labels[el.index];
           const value = ds.data[el.index];
           // To use the modal function of before to show the info of the data points clicked
           show_more_info(`${ds.label}<br><strong>${date}</strong><br>Rate: ${Number(value).toFixed(6)}`);
@@ -436,7 +436,7 @@ function Exchange_currencies_chart() {
       plugins: {
         title: {
           display: true,
-          text: () => `USD to ${fxCurrentTarget} exchange currency rates over the time`
+          text: () => `USD to ${exchangeCurrent} exchange currency rates over the time`
         },
         // The legend fo the chart
         legend: { display: true }
@@ -454,9 +454,9 @@ function Exchange_currencies_chart() {
 function change_comparison_USD() {
   // to get the currency selecte by the user
   const sel = document.getElementById("CompareCurrency");
-  fxCurrentTarget = sel.value;
+  exchangeCurrent = sel.value;
   // Function to load the data of the new used currency
-  load_new_currencies(fxCurrentDays);
+  load_new_currencies(exchangeTime);
 }
 // This function uses the API of Frankfurter to fetch the values of the exchange currencies
 async function values_comparison_USD(days, chart) {
@@ -477,7 +477,7 @@ async function values_comparison_USD(days, chart) {
     const s = start.toISOString().split("T")[0];
     const e = end.toISOString().split("T")[0];
     // This is the URL of the API used to ge the data of the exchange currencies
-    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${fxCurrentTarget}`;
+    const url = `https://api.frankfurter.app/${s}..${e}?from=USD&to=${exchangeCurrent}`;
     // sometimes it saturates
     const res = await fetch(url);
     // We check for errors in the fetch request
@@ -486,23 +486,23 @@ async function values_comparison_USD(days, chart) {
     // Process the data to get the values with its dates
     const dates = Object.keys(data.rates).sort();
     const values = dates.map(d => {
-      const rec = data.rates[d];
+      const recommendation = data.rates[d];
       // We return the value of the target currency obtained from the fetched data
-      return rec ? rec[fxCurrentTarget] : null;
+      return recommendation ? recommendation[exchangeCurrent] : null;
     });
     // We update the chart with the new data that we obtained
     chart.data.labels = dates;
     chart.data.datasets = [
       {
         // the USD currency used as base against the target currency selected
-        label: `USD/${fxCurrentTarget}`,
+        label: `USD/${exchangeCurrent}`,
         data: values,
         borderColor: "#00ff99ff",
 
       },
       {
         // The target currency selected by the user against the USD
-        label: `${fxCurrentTarget}/USD`,
+        label: `${exchangeCurrent}/USD`,
         data: values.map(v => (v != null ? 1 / v : null)),
         borderColor: "#0095ffff",
 
@@ -517,54 +517,54 @@ async function values_comparison_USD(days, chart) {
 // This asyncronate function is to load the data of the exchange currencies
 // depending on the time range that has been selected by the user
 async function load_new_currencies(days) {
-  fxCurrentDays = days;
+  exchangeTime = days;
   // To initialize the chart if needed
-  if (!fxChart) Exchange_currencies_chart();
-  fxChart.data.labels = [];
-  fxChart.data.datasets = [];
+  if (!chartExchange) Exchange_currencies_chart();
+  chartExchange.data.labels = [];
+  chartExchange.data.datasets = [];
   // To update the chart with the new data
-  fxChart.update();
-  await values_comparison_USD(days, fxChart);
+  chartExchange.update();
+  await values_comparison_USD(days, chartExchange);
 }
 // This function is used to being able to download the data as a CSV file is the user wants
 function download_charts_CSV() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
-  if (!fxChart || !fxChart.data.labels.length) {
+  if (!chartExchange || !chartExchange.data.labels.length) {
     alert("There is no exchange currency data to download at the moment.");
     return;
   }
   // This const will store the CSV data that is going to be downloaded from the chart
-  const labels = fxChart.data.labels;
-  const datasets = fxChart.data.datasets;
+  const labels = chartExchange.data.labels;
+  const datasets = chartExchange.data.datasets;
   // Creates the CSV string with the data obtained from the chart
-  let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  let csvWork = "Date," + datasets.map(d => d.label).join(",") + "\n";
   // For each one of the dates we make a new row with the data
   for (let i = 0; i < labels.length; i++) {
     const row = [labels[i], ...datasets.map(d => (d.data[i] != null ? d.data[i] : ""))];
-    csv += row.join(",") + "\n";
+    csvWork += row.join(",") + "\n";
   }
   // This is to create the CSV file and download it
-  const blob = new Blob([csv], { type: "text/csv" });
+  const blob = new Blob([csvWork], { type: "text/csv" });
   // And the name of the file
   const a = document.createElement("a");
   // This is the link used for the download
   a.href = URL.createObjectURL(blob);
-  a.download = `USD_${fxCurrentTarget}_exchange.csv`;
+  a.download = `USD_${exchangeCurrent}_exchange.csv`;
   a.click();
 }
 // This function is used to download the chart as a PNG image
 function download_charts_PNG() {
   // If the chart has not loaded yet(at the start or when the API saturates) shows an alert
-  if (!fxChart) {
+  if (!chartExchange) {
     alert("The exchange currency chart is not ready to be downloaded at this moment.");
     return;
   }
   // This is going to be the link of the download of the image
   const link = document.createElement("a");
   // To get the image from the chart
-  link.href = fxChart.toBase64Image();
+  link.href = chartExchange.toBase64Image();
   // And the name of the file
-  link.download = `USD_${fxCurrentTarget}_exchange.png`;
+  link.download = `USD_${exchangeCurrent}_exchange.png`;
   link.click();
 }
 // Initialize the second chart on the page when this one is open
