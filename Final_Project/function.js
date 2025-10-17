@@ -28,17 +28,17 @@ function Drop_zone(container) {
       return;
     }
     // The color selected by the user
-    const color = document.getElementById("colorPicker").value;
-    const days = time_range_for_charts(document.getElementById("timeRange").value);
+    const color = document.getElementById("ChangeColor").value;
+    const days = time_range_for_charts(document.getElementById("TimeRange").value);
     await fetch_and_add_data(payload, color, days, container.chart);
   });
 }
 
 // this function allows to drag objects by activatiing it tactility
 function Drag_objects() {
-  const draggables = document.querySelectorAll("#draggables div");
+  const cryptosList = document.querySelectorAll("#cryptosList div");
   // To make each draggable object
-  draggables.forEach(el => {
+  cryptosList.forEach(el => {
     // For the start of the draging
     el.addEventListener("touchstart", e => {
       const touch = e.touches[0];
@@ -81,8 +81,8 @@ function Drag_objects() {
       // This is if the place we dropped the object is a valid dropzone we do this
       if (dropzone) {
         const payload = JSON.parse(el.dataset.dragPayload);
-        const color = document.getElementById("colorPicker").value;
-        const days = time_range_for_charts(document.getElementById("timeRange").value);
+        const color = document.getElementById("ChangeColor").value;
+        const days = time_range_for_charts(document.getElementById("TimeRange").value);
         // This is the function to fetch the data and add it to this first chart
         fetch_and_add_data(payload, color, days, dropzone.chart);
       }
@@ -109,7 +109,7 @@ function time_range_for_charts(val) {
 }
 
 // This is the function about the drag & drop data transfer
-document.querySelectorAll("#draggables div").forEach(el => {
+document.querySelectorAll("#cryptosList div").forEach(el => {
   el.addEventListener("dragstart", e => {
     const payload = {
       type: el.dataset.type,
@@ -123,9 +123,9 @@ document.querySelectorAll("#draggables div").forEach(el => {
 });
 
 // Here we add the function that creates new charts to compare the cryptocurrencies
-document.getElementById("addChart").addEventListener("click", () => {
+document.getElementById("AddChart").addEventListener("click", () => {
   // Create a new container for the chart
-  const section = document.getElementById("chart-area");
+  const section = document.getElementById("CryptoChart");
   const container = document.createElement("div");
   container.className = "chart-container dropzone";
   // Create the canvas for the new chart
@@ -251,11 +251,11 @@ async function add_new_cryto(coinId, color, days, chart) {
 
 // This function handles the modal used when clicking on data points of the charts
 const modal = document.getElementById("infoModal");
-const modalBody = document.getElementById("modalBody");
+const moreinfo = document.getElementById("moreinfo");
 const closeBtn = document.querySelector(".close");
 // Show the modal with the info of the data point in html
 function show_more_info(html) {
-  modalBody.innerHTML = html;
+  moreinfo.innerHTML = html;
   modal.style.display = "block";
 }
 // Close modal events when the user clicks
@@ -263,7 +263,7 @@ if (closeBtn) closeBtn.onclick = () => (modal.style.display = "none");
 window.onclick = (e) => { if (e.target === modal) modal.style.display = "none"; };
 
 // Function used for download button to work
-document.getElementById("download").addEventListener("click", () => {
+document.getElementById("DownloadPNG").addEventListener("click", () => {
   // Download the active chart that is being used as a PNG
   if (!activeChart) return;
   const link = document.createElement("a");
@@ -273,7 +273,7 @@ document.getElementById("download").addEventListener("click", () => {
 });
 
 // Function used for share button to work
-document.getElementById("share").addEventListener("click", async () => {
+document.getElementById("shareCrypto").addEventListener("click", async () => {
   // Share the active chart that is being used
   if (!activeChart) return;
   try {
@@ -302,8 +302,8 @@ document.getElementById("share").addEventListener("click", async () => {
 });
 
 // This function allows to change the time range used in the chats
-document.getElementById("timeRange").addEventListener("change", async () => {
-  const newDays = time_range_for_charts(document.getElementById("timeRange").value);
+document.getElementById("TimeRange").addEventListener("change", async () => {
+  const newDays = time_range_for_charts(document.getElementById("TimeRange").value);
   // For each of the charts that is being used we need to fetch again the data in the new time range
   for (const chart of charts) {
     const datasets = [...chart.data.datasets];
@@ -327,12 +327,12 @@ document.getElementById("timeRange").addEventListener("change", async () => {
 
 // This function allows the porfolio of the user to work to make able the use to 
 // search(or make a supposition og buying) in the purchases
-document.getElementById("buyForm").addEventListener("submit", async (e) => {
+document.getElementById("BuyCrypto").addEventListener("submit", async (e) => {
   e.preventDefault();
   // Get the values inserted from the user
-  const coin = document.getElementById("buyCoin").value.trim();
-  const date = document.getElementById("buyDate").value;
-  const amount = parseFloat(document.getElementById("buyAmount").value);
+  const coin = document.getElementById("TypeofCoin").value.trim();
+  const date = document.getElementById("DateofBuy").value;
+  const amount = parseFloat(document.getElementById("TotalAmount").value);
   // Validate the inputs entered by the user
   if (!coin || !date || !amount || amount <= 0) {
     alert("Please enter valid coin id, date and amount.");
@@ -341,13 +341,13 @@ document.getElementById("buyForm").addEventListener("submit", async (e) => {
   // Add the purchase done to the "portfolio"
   purchases.push({ coin, date, amount });
   await porfolio_for_purchases();
-  document.getElementById("buyForm").reset();
+  document.getElementById("BuyCrypto").reset();
 });
 
 // This function is an asyncronate one that updates the portfolio accordingly to the purchases that have been made
 async function porfolio_for_purchases() {
   // Summary of the portfolio displayed for the user
-  const container = document.getElementById("portfolioSummary");
+  const container = document.getElementById("InformationBuy");
   container.innerHTML = "<em>Calculating...</em>";
   const summary = [];
   // The initial total value of the portfolio

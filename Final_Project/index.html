@@ -26,10 +26,10 @@
 
   <main>
     <!-- This is the menu of what you can do in the page(is at the left) -->
-    <aside id="menu">
+    <aside id="mainmenu">
       <!-- Title -->
       <h2>Sources of Cryptos:</h2>
-      <div id="draggables">
+      <div id="cryptosList">
         <!-- Crypto option that can be puted in the chart area -->
         <div draggable="true" data-type="crypto" data-id="bitcoin">Bitcoin (BTC)</div>
         <div draggable="true" data-type="crypto" data-id="ethereum">Ethereum (ETH)</div>
@@ -42,7 +42,7 @@
       <h3>Options:</h3>
       <!-- The time range you can chose between -->
       <label>Time Ranges:
-        <select id="timeRange">
+        <select id="TimeRange">
           <option value="3">3 days</option>
           <option value="7">7 days</option>
           <option value="30" selected>30 days</option>
@@ -55,37 +55,38 @@
       </label>
       <!-- Color to choose of for the chart line(its a chromatic table) -->
       <label>Color for the Crypto:
-        <input type="color" id="colorPicker" value="#ff6384">
+        <input type="color" id="ChangeColor" value="#ff6384">
       </label>
       <!-- Buttons of functionalities -->
       <div style="margin-top:10px;">
         <!-- Button to add a new chart -->
-        <button id="addChart">Add New Chart</button>
+        <button id="AddChart">Add New Chart</button>
         <!-- Button to download the active chart -->
-        <button id="download">Download Active Chart</button>
+        <button id="DownloadPNG">Download Active Chart</button>
         <!-- Button to share the active chart -->
-        <button id="share">Share Active Chart</button>
+        <button id="shareCrypto">Share Active Chart</button>
       </div>
 
       <hr>
       <!-- Functionality to add purchases and see the "portfolio" summary -->
       <h3>My Purchases:</h3>
-      <form id="buyForm">
+      <form id="BuyCrypto">
         <!-- This is the input to add the new crypto to the porfolio -->
-        <label>Coin ID (example bitcoin): <input id="buyCoin" placeholder="bitcoin"></label><br>
+        <label>Coin ID (example bitcoin): <input id="TypeofCoin" placeholder="bitcoin"></label><br>
         <!-- This is the input to add the date you buy that coin to the porfolio -->
-        <label>Date (DD/MM/YYYY): <input id="buyDate" type="date"></label><br>
+        <label>Date (DD/MM/YYYY): <input id="DateofBuy" type="date"></label><br>
         <!-- This is the input to add the amount of coins you buyed to the porfolio -->
-        <label>Amount (only units): <input id="buyAmount" type="number" step="any" min="0"></label><br>
+        <label>Amount (only units): <input id="TotalAmount" type="number" step="any" min="0"></label><br>
         <!-- The button is used to add the purchase to the porfolio -->
         <button type="submit">Add Purchase</button>
       </form>
-      <div id="portfolioSummary"></div>
+      <!-- This is the area where the information about your purchases appear -->
+      <div id="InformationBuy"></div>
 
     </aside>
 
     <!-- This is the area where the first chart is displayed(the crypto one) -->
-    <section id="chart-area">
+    <section id="CryptoChart">
       <!-- This is the chart container where the firstchart is displayed and where the cryptos are dropped -->
       <div class="chart-container dropzone active">
         <canvas></canvas>
@@ -101,7 +102,7 @@
       <span class="close">&times;</span>
       <!-- The title of the modal -->
       <h3>Point Information:</h3>
-      <p id="modalBody"></p>
+      <p id="moreinfo"></p>
     </div>
   </div>
 
