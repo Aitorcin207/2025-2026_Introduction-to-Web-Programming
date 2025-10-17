@@ -311,7 +311,7 @@ document.getElementById("TimeRange").addEventListener("change", async () => {
     chart.data.labels = [];
     // We need to re-fetch the data for each of the datasets used in the chart
     for (const dtsts of datasets) {
-      const label = ds.label || "";
+      const label = dtsts.label || "";
       // Determine if it is a crypto or other type of data
       if (label.includes("(USD)") && !label.includes("/")) {
         const coinId = label.split(" ")[0];
