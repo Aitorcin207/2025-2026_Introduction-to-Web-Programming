@@ -279,8 +279,8 @@ document.getElementById("shareCrypto").addEventListener("click", async () => {
   try {
     const dataUrl = activeGraph.toBase64Image();
     const res = await fetch(dataUrl);
-    const blob = await res.blob();
-    const file = new File([blob], "chart.png", { type: blob.type });
+    const filecrypto = await res.blob();
+    const file = new File([filecrypto], "chart.png", { type: filecrypto.type });
     // Use Web Share API if it is available
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share({
@@ -484,26 +484,26 @@ async function values_comparison_USD(daysnum, chart) {
     if (!res.ok) throw new Error(`there's have been an error fetching Frankfurter: ${res.status}`);
     const data = await res.json();
     // Process the data to get the values with its dates
-    const dates = Object.keys(data.rates).sort();
-    const values = dates.map(d => {
+    const datesEX = Object.keys(data.rates).sort();
+    const valuesEX = datesEX.map(d => {
       const recommendation = data.rates[d];
       // We return the value of the target currency obtained from the fetched data
       return recommendation ? recommendation[exchangeCurrent] : null;
     });
     // We update the chart with the new data that we obtained
-    chart.data.labels = dates;
+    chart.data.labels = datesEX;
     chart.data.datasets = [
       {
         // the USD currency used as base against the target currency selected
         label: `USD/${exchangeCurrent}`,
-        data: values,
+        data: valuesEX,
         borderColor: "#00ff99ff",
 
       },
       {
         // The target currency selected by the user against the USD
         label: `${exchangeCurrent}/USD`,
-        data: values.map(v => (v != null ? 1 / v : null)),
+        data: valuesEX.map(v => (v != null ? 1 / v : null)),
         borderColor: "#0095ffff",
 
       }
@@ -534,23 +534,23 @@ function download_charts_CSV() {
     return;
   }
   // This const will store the CSV data that is going to be downloaded from the chart
-  const labels = chartExchange.data.labels;
-  const datasets = chartExchange.data.datasets;
+  const labelsEX = chartExchange.data.labels;
+  const datasetsEX = chartExchange.data.datasetsEX;
   // Creates the CSV string with the data obtained from the chart
-  let csvWork = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  let csvWork = "Date," + datasetsEX.map(d => d.label).join(",") + "\n";
   // For each one of the dates we make a new row with the data
-  for (let i = 0; i < labels.length; i++) {
-    const row = [labels[i], ...datasets.map(d => (d.data[i] != null ? d.data[i] : ""))];
+  for (let i = 0; i < labelsEX.length; i++) {
+    const row = [labelsEX[i], ...datasetsEX.map(d => (d.data[i] != null ? d.data[i] : ""))];
     csvWork += row.join(",") + "\n";
   }
   // This is to create the CSV file and download it
-  const blob = new Blob([csvWork], { type: "text/csv" });
+  const fileCSV = new Blob([csvWork], { type: "text/csv" });
   // And the name of the file
-  const a = document.createElement("a");
+  const filename = document.createElement("a");
   // This is the link used for the download
-  a.href = URL.createObjectURL(blob);
-  a.download = `USD_${exchangeCurrent}_exchange.csv`;
-  a.click();
+  filename.href = URL.createObjectURL(fileCSV);
+  filename.download = `USD_${exchangeCurrent}_exchange.csv`;
+  filename.click();
 }
 // This function is used to download the chart as a PNG image
 function download_charts_PNG() {
