@@ -574,13 +574,7 @@ window.addEventListener("DOMContentLoaded", () => {
   Exchange_currencies_chart();
   // maximum one year putted by default
   load_new_currencies("365");
-  // To make appear the chart in mobilephone
-    window.addEventListener("resize", () => {
-    if (chartExchange) {
-        chartExchange.resize();
-        chartExchange.update();
-    }
-    });
+  
 });
 // This function is used to format the date to the format used by CoinGecko API(dd-mm-yyyy)
 function formatDateForCG(dateGiven) {

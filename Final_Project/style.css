@@ -209,6 +209,8 @@ canvas {
     min-width: 100%;
     height: auto;
     padding: 0.5em;
+    display: block;
+    max-height: 600px;
   }
 
   /* Styles for the elements inside the menu for mobile phones */
