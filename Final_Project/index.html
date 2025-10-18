@@ -25,7 +25,38 @@
   </header>
 
   <main>
-    <!-- This is the menu of what you can do in the page(is at the left) -->
+    <!-- This is the section of the first chart that is for the currency exchange between USD and others -->
+<div class="FirstChart">
+  <h2>Currency Exchange from USD to Other currencies:</h2>
+  <!-- This are the settings for the new currency exchange chat -->
+  <div class="settings">
+    <label for="CompareCurrency">Currency to exchange:</label>
+    <!-- To select the currency that we are going to compare to the USD -->
+    <select id="CompareCurrency" onchange="change_comparison_USD()">
+      <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
+      <option value="EUR" selected>EUR (Euro)</option>
+      <option value="JPY">JPY (Yen)</option>
+      <option value="GBP">GBP (Pound)</option>
+      <option value="CHF">CHF (Swiss Franc)</option>
+
+    </select>
+
+    <!-- Buttons to select the time range of the exchange data currencies by default 1 year is selected -->
+    <button onclick="load_new_currencies('30')">1 month</button>
+    <button onclick="load_new_currencies('180')">6 months</button>
+    <button onclick="load_new_currencies('365')">1 year</button>
+    <button onclick="load_new_currencies('1825')">5 years</button>
+    <button onclick="load_new_currencies('max')">Max</button>
+    <button onclick="download_charts_CSV()">Download in CSV</button>
+    <button onclick="download_charts_PNG()">Download in PNG</button>
+  </div>
+  <!-- The container of the chart maximum size -->
+  <div class="ChartContainer2" style="max-width:100%; max-height:360px; overflow:auto;">
+    <!-- Height and Width of the container -->
+    <canvas id="ExchangeChart" height="120" style="display:block; width:100%; max-width:100%; height:300px;"></canvas>
+  </div>
+</div>
+    <!-- This is the menu of what you can do in the page(is at the right) -->
     <aside id="MainMenu">
       <!-- Title -->
       <h2>Sources of Cryptos:</h2>
@@ -106,37 +137,7 @@
     </div>
   </div>
 
-<!-- This is the section of the second chart that is for the currency exchange between USD and others -->
-<div class="SecondChart">
-  <h2>Currency Exchange from USD to Other currencies:</h2>
-  <!-- This are the settings for the new currency exchange chat -->
-  <div class="settings">
-    <label for="CompareCurrency">Currency to exchange:</label>
-    <!-- To select the currency that we are going to compare to the USD -->
-    <select id="CompareCurrency" onchange="change_comparison_USD()">
-      <!-- THe possible currencies to exchange to USD the Euro is selected by default -->
-      <option value="EUR" selected>EUR (Euro)</option>
-      <option value="JPY">JPY (Yen)</option>
-      <option value="GBP">GBP (Pound)</option>
-      <option value="CHF">CHF (Swiss Franc)</option>
 
-    </select>
-
-    <!-- Buttons to select the time range of the exchange data currencies by default 1 year is selected -->
-    <button onclick="load_new_currencies('30')">1 month</button>
-    <button onclick="load_new_currencies('180')">6 months</button>
-    <button onclick="load_new_currencies('365')">1 year</button>
-    <button onclick="load_new_currencies('1825')">5 years</button>
-    <button onclick="load_new_currencies('max')">Max</button>
-    <button onclick="download_charts_CSV()">Download in CSV</button>
-    <button onclick="download_charts_PNG()">Download in PNG</button>
-  </div>
-  <!-- The container of the chart maximum size -->
-  <div class="ChartContainer2" style="max-width:100%; max-height:360px; overflow:auto;">
-    <!-- Height and Width of the container -->
-    <canvas id="ExchangeChart" height="120" style="display:block; width:100%; max-width:100%; height:300px;"></canvas>
-  </div>
-</div>
 
 
   <!-- A little footer at the end with the data/APIs that have been used in the project -->

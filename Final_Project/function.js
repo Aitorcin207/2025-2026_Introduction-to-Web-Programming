@@ -205,7 +205,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Initialize the second chart on the page when this one is open
+    // Initialize the first chart on the page when this one is open(the one for exchange currencies)
     if (typeof Exchange_currencies_chart === "function" && typeof load_new_currencies === "function") {
          // Uses function for initializing the chart  
         Exchange_currencies_chart();

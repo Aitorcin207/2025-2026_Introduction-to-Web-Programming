@@ -23,7 +23,7 @@ main {
 header {
   text-align: center;
   box-shadow: var(--shadow);
-  padding: 1em;
+  padding: 0.1em;
   background: var(--brown);
   color: white;
 
@@ -43,11 +43,11 @@ canvas {
 
 }
 
-/* Style used for the main menu that is located on the left side of the web page */
+/* Style used for the main menu that is located on the right side of the web page */
 #MainMenu {
-  width: 250px;
+  width: 230px;
   box-shadow: var(--shadow);    
-  max-height: 85vh;
+  max-height: 90vh;
   scrollbar-width: thin;
   border-radius: 8px;
   overflow-y: auto;
@@ -55,7 +55,8 @@ canvas {
   padding: 1em;
   scrollbar-color: #bbb #f5f8fc;
   flex-shrink: 0;
-
+  margin-left: auto; /* push the menu to the right in the flex container */
+  order: 2; /* ensure it's placed after the main content */
 }
 
 /* This is a unique scrollbar only for the menu on the side */
