@@ -41,7 +41,6 @@ function download_charts_PNG() {
   toDownloadEX.download = `USD_${exchangeCurrent}_exchange.png`;
   toDownloadEX.click();
 }
-
 // This function uses the API of Frankfurter to fetch the values of the exchange currencies
 async function values_comparison_USD(daysnum, chart) {
   // First we clear the data of the last time range used
@@ -150,4 +149,13 @@ function Exchange_currencies_chart() {
       }
     }
   });
+}
+// This is the function that allows to change the currency that is being compared 
+// with the USD(The API used the dollar as base currency so I have to use that)
+function change_comparison_USD() {
+  // to get the currency selecte by the user
+  const sel = document.getElementById("CompareCurrency");
+  exchangeCurrent = sel.value;
+  // Function to load the data of the new used currency
+  load_new_currencies(exchangeTime);
 }
