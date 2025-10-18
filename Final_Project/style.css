@@ -193,7 +193,7 @@ canvas {
     align-items: center;
   }
 
-  /* Chart container styles used for mobile phones */
+  /*Second chart container style used for mobile phones */
   .ChartContainer {
     width: 100%;
     max-width: 100%;
@@ -202,6 +202,7 @@ canvas {
     padding: 0.5em;
   }
 
+  /*First Chart container style used for mobile phones */
   .ChartContainer2 {
     width: 100%;
     max-width: 100%;
