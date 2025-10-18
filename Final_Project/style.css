@@ -157,54 +157,56 @@ canvas {
 
 /* Responsive for mobile phones */
 @media (max-width: 768px) {
+
   /* Main area styles for mobile phones */
   main {
-    padding: 0.5em;
     flex-direction: column;
-
-  }
-  
-  /* Chart canvas styles for mobile phones */
-  canvas {
-    height: 250px;
-
+    align-items: stretch;
+    padding: 0.5em;
   }
 
   /* Header styles for mobile phones */
   header h1 {
     font-size: 1.4em;
+  }
 
+  /* Chart canvas styles for mobile phones */
+  canvas {
+    height: 250px;
   }
 
   /* Menu styles used for mobile phones */
   #MainMenu {
     max-height: none;
     width: 100%;
-    order: 2;
-
+    margin-left: 0; /* remove the right-side push */
+    order: 2;       /* place it after the charts */
+    box-shadow: none;
+    border-radius: 0;
   }
 
   /* Chart area styles used in the crypto chart for mobile phones */
   #CryptoChart {
     order: 1;
     width: 100%;
-
+    flex-direction: column;
+    align-items: center;
   }
-  
+
   /* Chart container styles used for mobile phones */
   .ChartContainer {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
     height: auto;
-
+    padding: 0.5em;
   }
 
-  /* Styles for the elements inside the menu(that in mobiles its not in the left but below) for mobile phones */
-  #MainMenu button, #MainMenu select, #MainMenu input {
+  /* Styles for the elements inside the menu for mobile phones */
+  #MainMenu button,
+  #MainMenu select,
+  #MainMenu input {
     margin-top: 0.5em;
     width: 100%;
-
   }
-
 }
