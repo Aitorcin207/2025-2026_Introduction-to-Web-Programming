@@ -179,8 +179,8 @@ canvas {
   #MainMenu {
     max-height: none;
     width: 100%;
-    margin-left: 0; /* remove the right-side push */
-    order: 2;       /* place it after the charts */
+    margin-left: 0;
+    order: 2;
     box-shadow: none;
     border-radius: 0;
   }
@@ -195,6 +195,14 @@ canvas {
 
   /* Chart container styles used for mobile phones */
   .ChartContainer {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    height: auto;
+    padding: 0.5em;
+  }
+
+  .ChartContainer2 {
     width: 100%;
     max-width: 100%;
     min-width: 100%;
