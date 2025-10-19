@@ -1,0 +1,7 @@
+body { margin: 0; background: black; }
+#gameContainer {
+  width: 900px;
+  height: 650px;
+  margin: 0 auto;
+  display: block;
+}
